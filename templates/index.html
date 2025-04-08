@@ -282,14 +282,19 @@
     </div>
 </div>
 
-<!-- Recent Borrowers -->
+<!-- All Borrowers -->
 <div class="card shadow-sm">
     <div class="card-header bg-light py-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Recent Borrowers</h6>
-            <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#borrowersTable" aria-expanded="true">
-                <i class="fas fa-chevron-down"></i>
-            </a>
+            <h6 class="m-0 font-weight-bold text-primary">List of All Borrowers</h6>
+            <div>
+                <a href="{{ url_for('export_all') }}" class="btn btn-sm btn-success me-2">
+                    <i class="fas fa-file-excel me-1"></i> Export All
+                </a>
+                <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#borrowersTable" aria-expanded="true">
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+            </div>
         </div>
     </div>
     <div class="collapse show" id="borrowersTable">
@@ -308,8 +313,8 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for borrower in borrowers[:10] %}
+                    <tbody id="borrowersTableBody">
+                        {% for borrower in borrowers %}
                         <tr>
                             <td>{{ borrower.serial_no }}</td>
                             <td class="devanagari">{{ borrower.borrower_name }}</td>
@@ -341,9 +346,6 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
-            <div class="card-footer text-center">
-                <a href="{{ url_for('index') }}" class="btn btn-sm btn-primary">View All Borrowers</a>
             </div>
         </div>
     </div>
@@ -496,8 +498,8 @@
         });
         
         // Function to render borrowers table
-        function renderBorrowersTable(borrowers, filteredBy = 'All Borrowers') {
-            const tableBody = document.querySelector('#borrowersTable tbody');
+        function renderBorrowersTable(borrowers, filteredBy = 'List of All Borrowers') {
+            const tableBody = document.querySelector('#borrowersTableBody');
             const tableContainer = document.querySelector('#borrowersTable');
             const tableHeader = document.querySelector('.card-header h6');
             
@@ -519,7 +521,10 @@
                     exportToExcel(borrowers, filteredBy);
                 });
                 
-                document.querySelector('.card-header .d-flex').appendChild(exportBtn);
+                const btnContainer = document.querySelector('.card-header .d-flex div');
+                if (btnContainer) {
+                    btnContainer.insertBefore(exportBtn, btnContainer.firstChild);
+                }
             }
             
             // Populate table with filtered data
@@ -577,19 +582,19 @@
             
             if (criteria === 'all') {
                 filtered = allBorrowers;
-                renderBorrowersTable(filtered, 'All Borrowers');
+                renderBorrowersTable(filtered, 'List of All Borrowers');
             } 
             else if (criteria === 'sent') {
                 filtered = allBorrowers.filter(b => b.letter_status === 'Send');
-                renderBorrowersTable(filtered, 'Letters Sent');
+                renderBorrowersTable(filtered, 'List of Borrowers with Sent Letters');
             } 
             else if (criteria === 'returned') {
                 filtered = allBorrowers.filter(b => b.letter_status === 'Returned Back');
-                renderBorrowersTable(filtered, 'Letters Returned');
+                renderBorrowersTable(filtered, 'List of Borrowers with Returned Letters');
             } 
             else if (criteria === 'not-sent') {
                 filtered = allBorrowers.filter(b => b.letter_status === 'Not Send');
-                renderBorrowersTable(filtered, 'Letters Not Sent');
+                renderBorrowersTable(filtered, 'List of Borrowers with Pending Letters');
             }
             
             return filtered;
@@ -658,16 +663,16 @@
                 // Apply filtering based on the link clicked
                 if (filterType === 'all') {
                     filteredBorrowers = allBorrowers;
-                    exportTitle = 'All Borrowers';
+                    exportTitle = 'All_Borrowers';
                 } else if (filterType === 'sent') {
                     filteredBorrowers = allBorrowers.filter(b => b.letter_status === 'Send');
-                    exportTitle = 'Letters Sent';
+                    exportTitle = 'Letters_Sent';
                 } else if (filterType === 'returned') {
                     filteredBorrowers = allBorrowers.filter(b => b.letter_status === 'Returned Back');
-                    exportTitle = 'Letters Returned';
+                    exportTitle = 'Letters_Returned';
                 } else if (filterType === 'not-sent') {
                     filteredBorrowers = allBorrowers.filter(b => b.letter_status === 'Not Send');
-                    exportTitle = 'Letters Not Sent';
+                    exportTitle = 'Letters_Not_Sent';
                 }
                 
                 exportToExcel(filteredBorrowers, exportTitle);
@@ -676,15 +681,18 @@
         
         // Add hover effect to stat cards
         document.querySelectorAll('.card-link').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.querySelector('.card').style.transform = 'translateY(-10px)';
-                this.querySelector('.card').style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.querySelector('.card').style.transform = 'translateY(-5px)';
-                this.querySelector('.card').style.boxShadow = '0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15)';
-            });
+            const cardElement = card.querySelector('.card');
+            if (cardElement) {
+                card.addEventListener('mouseenter', function() {
+                    cardElement.style.transform = 'translateY(-10px)';
+                    cardElement.style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    cardElement.style.transform = 'translateY(-5px)';
+                    cardElement.style.boxShadow = '0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15)';
+                });
+            }
         });
     });
 </script>
