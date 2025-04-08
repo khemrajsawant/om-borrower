@@ -124,12 +124,46 @@
     </div>
 </div>
 
+<!-- Bulk Update Section -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Bulk Update Letter Status</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('index') }}">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="serial_nos" class="form-label">Serial Numbers (comma-separated)</label>
+                        <input type="text" id="serial_nos" name="serial_nos" class="form-control" placeholder="e.g., 1,2,3,4,5" required>
+                        <div class="form-text">Enter the serial numbers of borrowers to update.</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="letter_status" class="form-label">Letter Status</label>
+                        <select id="letter_status" name="letter_status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="Not Send">Not Sent</option>
+                            <option value="Send">Sent</option>
+                            <option value="Returned Back">Returned</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary mb-3 w-100">Update</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- List of Borrowers -->
 <div class="card shadow-sm">
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Borrowers List</h5>
-            <span class="counter">Showing {{ (page - 1) * per_page + 1 }} to {% if (page * per_page) > stats.total_borrowers %}{{ stats.total_borrowers }}{% else %}{{ page * per_page }}{% endif %} of {{ stats.total_borrowers }} entries</span>
+            <span class="counter">Showing all {{ stats.total_borrowers }} entries</span>
         </div>
     </div>
     <div class="card-body p-0">
@@ -181,49 +215,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
-    <div class="card-footer">
-        <nav aria-label="Borrower pagination">
-            <ul class="pagination mb-0">
-                {% set pages = (stats.total_borrowers // per_page) + (1 if stats.total_borrowers % per_page > 0 else 0) %}
-                
-                {% if page > 1 %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('index', page=page-1) }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% endif %}
-                
-                {% for p in range(1, pages + 1) %}
-                {% if p >= page - 2 and p <= page + 2 %}
-                <li class="page-item {{ 'active' if p == page else '' }}">
-                    <a class="page-link" href="{{ url_for('index', page=p) }}">{{ p }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                
-                {% if page < pages %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('index', page=page+1) }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
     </div>
 </div>
 {% endblock %}

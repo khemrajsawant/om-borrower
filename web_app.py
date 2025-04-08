@@ -47,19 +47,29 @@ def now_filter(format_string='%Y'):
 
 
 # Routes
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """Home page with borrower list"""
-    page = request.args.get('page', 1, type=int)
-    per_page = 10  # Number of borrowers per page
-    
     # Get all borrowers
     borrowers = borrower_manager.get_all_borrowers()
     
-    # Calculate pagination
-    start = (page - 1) * per_page
-    end = start + per_page
-    paginated_borrowers = borrowers[start:end]
+    # Handle bulk update of letter status
+    if request.method == 'POST':
+        serial_nos = request.form.get('serial_nos', '').strip()
+        letter_status = request.form.get('letter_status', '')
+        
+        if serial_nos and letter_status:
+            serial_list = [s.strip() for s in serial_nos.split(',')]
+            updated_count = 0
+            
+            # Update each borrower with matching serial number
+            for borrower in borrowers:
+                if borrower['serial_no'] in serial_list:
+                    borrower_manager.update_borrower(borrower['id'], {'letter_status': letter_status})
+                    updated_count += 1
+            
+            flash(f'Updated letter status to "{letter_status}" for {updated_count} borrowers', 'success')
+            return redirect(url_for('index'))
     
     # Get statistics
     stats = {
@@ -70,9 +80,7 @@ def index():
     }
     
     return render_template('index.html', 
-                          borrowers=paginated_borrowers, 
-                          page=page, 
-                          per_page=per_page, 
+                          borrowers=borrowers,
                           stats=stats)
 
 
