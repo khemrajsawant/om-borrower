@@ -5,15 +5,34 @@ Main application file that initializes the web application.
 from flask import Flask
 from models import db
 import os
+from pathlib import Path
+
+# Try to load .env file if available (for local deployment)
+try:
+    from dotenv import load_dotenv
+    # Load environment variables from .env file
+    env_path = Path('.') / '.env'
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path)
+        print("Loaded environment variables from .env file")
+except ImportError:
+    print("python-dotenv not installed, using environment variables directly")
 
 # Create the Flask application
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # For flash messages and session
+# Use the secret key from environment variable or generate a random one
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(24))
 
-# Configure database
-database_url = os.environ.get("DATABASE_URL")
+# Configure database - Use SQLite as fallback if no DATABASE_URL is provided
+database_url = os.environ.get("DATABASE_URL", "sqlite:///data/borrower_management.db")
+# Ensure the data directory exists for SQLite
+if database_url.startswith("sqlite:///data/"):
+    os.makedirs("data", exist_ok=True)
+
+# Handle Heroku's postgres:// vs postgresql:// URL format
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
+    
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,

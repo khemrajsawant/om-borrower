@@ -73,6 +73,9 @@ class Document(db.Model):
     
     def to_dict(self):
         """Convert document object to dictionary"""
+        # Get file type safely, ensuring it never returns None
+        file_type = self.file_type if self.file_type else self.get_file_type()
+        
         return {
             'id': self.id,
             'borrower_id': self.borrower_id,
@@ -81,7 +84,7 @@ class Document(db.Model):
             'description': self.description,
             'uploaded_at': self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') if self.uploaded_at else None,
             'upload_date': self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') if self.uploaded_at else None,
-            'file_type': self.file_type or self.get_file_type()
+            'file_type': file_type
         }
         
     def get_file_type(self):
@@ -92,10 +95,14 @@ class Document(db.Model):
     def is_previewable(self):
         """Check if the document is previewable in a browser"""
         from utils import is_previewable
-        file_type = self.file_type or self.get_file_type()
-        if not file_type:
-            return False, None
         
+        # Get file type, ensuring it's never None
+        file_type = self.file_type if self.file_type else self.get_file_type()
+        
+        # Default to 'unknown' if still None somehow
+        if not file_type:
+            file_type = 'unknown'
+            
         return is_previewable(file_type)
         
     def get_preview_url(self):
