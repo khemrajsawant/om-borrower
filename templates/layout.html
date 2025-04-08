@@ -17,13 +17,21 @@
     <style>
         :root {
             --primary-color: #4e73df;
+            --primary-color-rgb: 78, 115, 223;
             --secondary-color: #2c3e50;
+            --secondary-color-rgb: 44, 62, 80;
             --success-color: #1cc88a;
+            --success-color-rgb: 28, 200, 138;
             --danger-color: #e74a3b;
+            --danger-color-rgb: 231, 74, 59;
             --warning-color: #f6c23e;
+            --warning-color-rgb: 246, 194, 62;
             --info-color: #36b9cc;
+            --info-color-rgb: 54, 185, 204;
             --light-color: #f8f9fc;
+            --light-color-rgb: 248, 249, 252;
             --dark-color: #5a5c69;
+            --dark-color-rgb: 90, 92, 105;
         }
         
         body {
@@ -306,19 +314,33 @@
         
         .btn-progress:disabled {
             cursor: not-allowed;
+            opacity: 0.8;
         }
         
         .btn-progress .spinner {
             display: none;
             margin-right: 5px;
+            transition: all 0.3s ease;
         }
         
         .btn-progress.loading .spinner {
             display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        
+        .btn-progress.loading {
+            position: relative;
+            pointer-events: none;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .progress-bar-container {
-            height: 4px;
+            height: 6px;
             width: 100%;
             position: fixed;
             top: 0;
@@ -326,13 +348,39 @@
             z-index: 9999;
             overflow: hidden;
             display: none;
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease;
         }
         
         .progress-bar {
             height: 100%;
             width: 0;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--info-color) 100%);
+            background-size: 200% auto;
+            animation: shine 1.5s linear infinite, pulse 2s infinite;
+            transition: width 0.3s ease-out;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Pulse effect for the progress bar */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
+            }
+        }
+        
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
         }
         
         .form-label {
@@ -598,61 +646,105 @@
                 const progressBarContainer = document.querySelector('.progress-bar-container');
                 const progressBar = document.querySelector('.progress-bar');
                 
+                // Show progress container with animation
                 progressBarContainer.style.display = 'block';
-                let width = 0;
-                const interval = setInterval(function() {
-                    if (width >= 90) {
-                        clearInterval(interval);
-                    } else {
-                        width += Math.random() * 10;
-                        progressBar.style.width = width + '%';
-                    }
-                }, 200);
                 
+                // Add a small delay before starting to make it more noticeable
+                setTimeout(() => {
+                    let width = 0;
+                    // Initial jump to give immediate feedback
+                    width = 15;
+                    progressBar.style.width = width + '%';
+                    
+                    const interval = setInterval(function() {
+                        if (width >= 85) {
+                            // Stop at 85% as we'll go to 100% on completion
+                            clearInterval(interval);
+                        } else {
+                            // Random increments but weighted to be faster at the beginning and slower at the end
+                            const increment = Math.max(1, Math.random() * 15 * (1 - width/100));
+                            width = Math.min(85, width + increment);
+                            progressBar.style.width = width + '%';
+                        }
+                    }, 180);
+                    
+                    return {
+                        complete: function() {
+                            // Complete by going to 100%
+                            clearInterval(interval);
+                            progressBar.style.width = '100%';
+                            
+                            // Hide after a short delay for user to see completion
+                            setTimeout(function() {
+                                // Fade out effect
+                                progressBarContainer.style.opacity = '0';
+                                setTimeout(function() {
+                                    progressBarContainer.style.display = 'none';
+                                    progressBar.style.width = '0';
+                                    progressBarContainer.style.opacity = '1';
+                                }, 300);
+                            }, 400);
+                        }
+                    };
+                }, 50);
+                
+                // Return an object with a complete method that can be called later
                 return {
                     complete: function() {
                         progressBar.style.width = '100%';
                         setTimeout(function() {
-                            progressBarContainer.style.display = 'none';
-                            progressBar.style.width = '0';
-                        }, 500);
+                            // Fade out effect
+                            progressBarContainer.style.opacity = '0';
+                            setTimeout(function() {
+                                progressBarContainer.style.display = 'none';
+                                progressBar.style.width = '0';
+                                progressBarContainer.style.opacity = '1';
+                            }, 300);
+                        }, 400);
                     }
                 };
             }
             
-            // Add progress indicator to all buttons with form submission
-            const buttons = document.querySelectorAll('button[type="submit"], input[type="submit"]');
-            buttons.forEach(function(button) {
-                button.classList.add('btn-progress');
-                
-                // Add spinner element to button
-                const spinner = document.createElement('span');
-                spinner.classList.add('spinner');
-                spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                button.prepend(spinner);
-                
-                // Find the parent form
-                const form = button.closest('form');
-                if (form) {
-                    form.addEventListener('submit', function() {
-                        const progress = showProgressBar();
-                        button.classList.add('loading');
-                        button.disabled = true;
-                        
-                        // For cases where the form might get stuck
-                        setTimeout(function() {
-                            progress.complete();
-                            button.classList.remove('loading');
-                            button.disabled = false;
-                        }, 30000); // 30 second timeout as fallback
-                    });
+            // Function to setup progress indicators for submit buttons
+            function setupSubmitButtonProgress(button) {
+                if (!button.classList.contains('btn-progress')) {
+                    button.classList.add('btn-progress');
+                    
+                    // Add spinner element to button if it doesn't exist
+                    if (!button.querySelector('.spinner')) {
+                        const spinner = document.createElement('span');
+                        spinner.classList.add('spinner');
+                        spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        button.prepend(spinner);
+                    }
+                    
+                    // Find the parent form
+                    const form = button.closest('form');
+                    if (form && !form.dataset.progressSetup) {
+                        form.dataset.progressSetup = 'true';
+                        form.addEventListener('submit', function() {
+                            const progress = showProgressBar();
+                            button.classList.add('loading');
+                            button.disabled = true;
+                            
+                            // For cases where the form might get stuck
+                            setTimeout(function() {
+                                progress.complete();
+                                button.classList.remove('loading');
+                                button.disabled = false;
+                            }, 30000); // 30 second timeout as fallback
+                        });
+                    }
                 }
-            });
+            }
             
-            // Add progress indicators to action links (delete, edit, etc)
-            const actionLinks = document.querySelectorAll('a.btn:not([href="#"])');
-            actionLinks.forEach(function(link) {
-                if (!link.getAttribute('href').startsWith('#') && !link.classList.contains('dropdown-toggle')) {
+            // Function to setup progress indicators for action links
+            function setupActionLinkProgress(link) {
+                if (!link.dataset.progressSetup && 
+                    !link.getAttribute('href').startsWith('#') && 
+                    !link.classList.contains('dropdown-toggle')) {
+                    
+                    link.dataset.progressSetup = 'true';
                     link.addEventListener('click', function(e) {
                         // Don't add progress for links with specific classes
                         if (link.classList.contains('no-progress') || 
@@ -661,14 +753,61 @@
                             return true;
                         }
                         
-                        showProgressBar();
+                        const progress = showProgressBar();
                         link.classList.add('disabled');
+                        
                         setTimeout(function() {
+                            progress.complete();
                             link.classList.remove('disabled');
                         }, 30000); // 30 second timeout as fallback
                     });
                 }
+            }
+            
+            // Initial setup for all submit buttons
+            const buttons = document.querySelectorAll('button[type="submit"], input[type="submit"]');
+            buttons.forEach(setupSubmitButtonProgress);
+            
+            // Initial setup for all action links
+            const actionLinks = document.querySelectorAll('a.btn:not([href="#"])');
+            actionLinks.forEach(setupActionLinkProgress);
+            
+            // Use MutationObserver to watch for dynamically added buttons and links
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                        mutation.addedNodes.forEach(function(node) {
+                            // Check if the added node is an element
+                            if (node.nodeType === 1) {
+                                // Check for submit buttons
+                                const dynamicButtons = node.querySelectorAll ? 
+                                    node.querySelectorAll('button[type="submit"], input[type="submit"]') : [];
+                                dynamicButtons.forEach(setupSubmitButtonProgress);
+                                
+                                // Check if node itself is a submit button
+                                if ((node.tagName === 'BUTTON' && node.type === 'submit') || 
+                                    (node.tagName === 'INPUT' && node.type === 'submit')) {
+                                    setupSubmitButtonProgress(node);
+                                }
+                                
+                                // Check for action links
+                                const dynamicLinks = node.querySelectorAll ? 
+                                    node.querySelectorAll('a.btn:not([href="#"])') : [];
+                                dynamicLinks.forEach(setupActionLinkProgress);
+                                
+                                // Check if node itself is an action link
+                                if (node.tagName === 'A' && node.classList.contains('btn') && 
+                                    (!node.getAttribute('href') || !node.getAttribute('href').startsWith('#'))) {
+                                    setupActionLinkProgress(node);
+                                }
+                            }
+                        });
+                    }
+                });
             });
+            
+            // Start observing the document with the configured parameters
+            observer.observe(document.body, { childList: true, subtree: true });
         });
     </script>
     
