@@ -76,7 +76,14 @@
                     {% if preview_type == 'image' %}
                         <img src="{{ url_for('view_document_route', doc_id=document.id) }}" class="image-preview" alt="{{ document.original_filename }}">
                     {% elif preview_type == 'pdf' %}
-                        <iframe src="{{ url_for('view_document_route', doc_id=document.id) }}" class="pdf-preview"></iframe>
+                        <object data="{{ url_for('view_document_route', doc_id=document.id) }}" type="application/pdf" class="pdf-preview">
+                            <div class="p-5 text-center">
+                                <p>It appears your browser doesn't support embedded PDFs.</p>
+                                <a href="{{ url_for('view_document_route', doc_id=document.id, download=True) }}" class="btn btn-primary">
+                                    <i class="fas fa-download me-1"></i> Download PDF
+                                </a>
+                            </div>
+                        </object>
                     {% elif preview_type == 'text' and text_content %}
                         <div class="text-preview">{{ text_content }}</div>
                     {% else %}

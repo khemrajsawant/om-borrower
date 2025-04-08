@@ -480,11 +480,25 @@ def register_routes(app):
         # Get file MIME type for proper content type
         mime_type = utils.get_file_mime_type(doc_path)
         
-        # Return the file (as attachment for download, inline for preview)
-        return send_file(doc_path, 
-                        download_name=document.original_filename,
-                        as_attachment=download,
-                        mimetype=mime_type)
+        # Add Content-Type and X-Content-Type-Options headers for security and proper rendering
+        response = send_file(doc_path, 
+                          download_name=document.original_filename,
+                          as_attachment=download,
+                          mimetype=mime_type)
+        
+        if not download:
+            # For inline viewing, set Content-Disposition to inline
+            response.headers['Content-Disposition'] = f'inline; filename="{document.original_filename}"'
+            # Set security headers to prevent MIME type sniffing vulnerabilities
+            response.headers['X-Content-Type-Options'] = 'nosniff'
+            # For PDFs, ensure proper handling in browsers
+            if mime_type == 'application/pdf':
+                response.headers['Content-Type'] = 'application/pdf'
+            # For images, ensure proper handling
+            elif mime_type.startswith('image/'):
+                response.headers['Content-Type'] = mime_type
+        
+        return response
     
     @app.route('/document/preview/<int:doc_id>')
     def preview_document_route(doc_id):
