@@ -27,6 +27,7 @@
     .stat-card {
         transition: all 0.3s ease;
         border-left: 4px solid;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
     }
     .stat-card:hover {
         transform: translateY(-5px);
@@ -49,8 +50,41 @@
     }
     .chart-container {
         position: relative;
-        height: 250px;
+        height: 300px;
     }
+    
+    /* Card link styling */
+    a.card-link {
+        color: inherit;
+        text-decoration: none;
+        display: block;
+    }
+    
+    a.card-link:hover {
+        text-decoration: none;
+    }
+    
+    a.card-link .card {
+        cursor: pointer;
+    }
+    
+    a.card-link .card-footer {
+        padding: 0.75rem 1.25rem;
+        opacity: 0.8;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    a.card-link:hover .card-footer {
+        opacity: 1;
+        background-color: rgba(0,0,0,0.03);
+    }
+    
+    /* Primary color variations */
+    .stat-card-primary { border-left-color: #4e73df; }
+    .stat-card-success { border-left-color: #1cc88a; }
+    .stat-card-warning { border-left-color: #f6c23e; }
+    .stat-card-info { border-left-color: #36b9cc; }
 </style>
 {% endblock %}
 
@@ -62,29 +96,20 @@
             <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
             <p class="text-muted mb-0">Welcome to the Borrower Management System</p>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ url_for('add_borrower_route') }}" class="btn btn-success">
-                <i class="fas fa-plus-circle me-1"></i> Add Borrower
-            </a>
-            <a href="{{ url_for('search_page') }}" class="btn btn-primary">
-                <i class="fas fa-search me-1"></i> Search
-            </a>
-            <div class="btn-group">
-                <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-file-export me-1"></i> Data
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="{{ url_for('export_all') }}">
-                            <i class="fas fa-file-excel me-2"></i> Export All to Excel
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ url_for('import_route') }}">
-                            <i class="fas fa-file-import me-2"></i> Import from Excel
-                        </a>
-                    </li>
-                </ul>
+        <div class="col-md-6">
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('add_borrower_route') }}" class="btn btn-success me-2">
+                    <i class="fas fa-plus-circle me-1"></i> Add Borrower
+                </a>
+                <a href="{{ url_for('search_page') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-1"></i> Search
+                </a>
+                <a href="{{ url_for('export_all') }}" class="btn btn-info me-2">
+                    <i class="fas fa-file-excel me-1"></i> Export All
+                </a>
+                <a href="{{ url_for('import_route') }}" class="btn btn-secondary">
+                    <i class="fas fa-file-import me-1"></i> Import
+                </a>
             </div>
         </div>
     </div>
@@ -93,89 +118,109 @@
 <!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-primary h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="text-uppercase">Total Borrowers</h5>
-                        <div class="stat-value">{{ stats.total_borrowers }}</div>
-                        <div class="mt-2 text-muted small">
-                            <span class="text-success me-2"><i class="fas fa-angle-up"></i> {{ stats.growth_rate }}%</span>
-                            <span>Since last month</span>
+        <a href="#" class="card-link" id="filter-all-borrowers">
+            <div class="card stat-card stat-card-primary h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase">Total Borrowers</h5>
+                            <div class="stat-value">{{ stats.total_borrowers }}</div>
+                            <div class="mt-2 text-muted small">
+                                <span class="text-success me-2"><i class="fas fa-angle-up"></i> {{ stats.growth_rate }}%</span>
+                                <span>Since last month</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
-                    <div class="stat-icon text-primary">
-                        <i class="fas fa-users"></i>
-                    </div>
+                </div>
+                <div class="card-footer text-center bg-transparent small">
+                    <i class="fas fa-filter me-1"></i> Click to view all borrowers
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-success h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="text-uppercase">Letters Sent</h5>
-                        <div class="stat-value">{{ stats.letters_sent }}</div>
-                        <div class="mt-2 text-muted small">
-                            <span class="text-success me-2"><i class="fas fa-check-circle"></i></span>
-                            <span>{{ stats.letters_sent_percentage }}% of total borrowers</span>
+        <a href="#" class="card-link" id="filter-letters-sent">
+            <div class="card stat-card stat-card-success h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase">Letters Sent</h5>
+                            <div class="stat-value">{{ stats.letters_sent }}</div>
+                            <div class="mt-2 text-muted small">
+                                <span class="text-success me-2"><i class="fas fa-check-circle"></i></span>
+                                <span>{{ stats.letters_sent_percentage }}% of total borrowers</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-envelope-open-text"></i>
                         </div>
                     </div>
-                    <div class="stat-icon text-success">
-                        <i class="fas fa-envelope-open-text"></i>
-                    </div>
+                </div>
+                <div class="card-footer text-center bg-transparent small">
+                    <i class="fas fa-filter me-1"></i> Click to view sent letters
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-warning h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="text-uppercase">Letters Returned</h5>
-                        <div class="stat-value">{{ stats.letters_returned }}</div>
-                        <div class="mt-2 text-muted small">
-                            <span class="text-danger me-2"><i class="fas fa-exclamation-circle"></i></span>
-                            <span>{{ stats.letters_returned_percentage }}% of sent letters</span>
+        <a href="#" class="card-link" id="filter-letters-returned">
+            <div class="card stat-card stat-card-warning h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase">Letters Returned</h5>
+                            <div class="stat-value">{{ stats.letters_returned }}</div>
+                            <div class="mt-2 text-muted small">
+                                <span class="text-danger me-2"><i class="fas fa-exclamation-circle"></i></span>
+                                <span>{{ stats.letters_returned_percentage }}% of sent letters</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-envelope-open"></i>
                         </div>
                     </div>
-                    <div class="stat-icon text-warning">
-                        <i class="fas fa-envelope-open"></i>
-                    </div>
+                </div>
+                <div class="card-footer text-center bg-transparent small">
+                    <i class="fas fa-filter me-1"></i> Click to view returned letters
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-info h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="text-uppercase">Documents</h5>
-                        <div class="stat-value">{{ stats.total_documents }}</div>
-                        <div class="mt-2 text-muted small">
-                            <span class="text-info me-2"><i class="fas fa-file-alt"></i></span>
-                            <span>{{ stats.docs_per_borrower }} avg per borrower</span>
+        <a href="#" class="card-link" id="filter-letters-not-sent">
+            <div class="card stat-card stat-card-info h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="text-uppercase">Letters Not Sent</h5>
+                            <div class="stat-value">{{ stats.letters_not_sent }}</div>
+                            <div class="mt-2 text-muted small">
+                                <span class="text-info me-2"><i class="fas fa-clock"></i></span>
+                                <span>Pending correspondence</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon text-info">
+                            <i class="fas fa-envelope"></i>
                         </div>
                     </div>
-                    <div class="stat-icon text-info">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
+                </div>
+                <div class="card-footer text-center bg-transparent small">
+                    <i class="fas fa-filter me-1"></i> Click to view not sent letters
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
 <div class="row mb-4">
     <!-- Chart - Letter Status Distribution -->
-    <div class="col-xl-8 col-lg-7">
+    <div class="col">
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
                 <h6 class="m-0 font-weight-bold text-primary">Borrower Statistics</h6>
@@ -194,28 +239,6 @@
                 <div class="chart-container">
                     <canvas id="mainChart"></canvas>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Recent Activity -->
-    <div class="col-xl-4 col-lg-5">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
-            </div>
-            <div class="card-body">
-                {% if recent_activity %}
-                    {% for activity in recent_activity %}
-                    <div class="recent-activity-item">
-                        <div class="activity-date">{{ activity.date }}</div>
-                        <h6 class="font-weight-bold">{{ activity.title }}</h6>
-                        <p class="mb-0">{{ activity.description }}</p>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-center my-4 text-muted">No recent activity found.</p>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -326,6 +349,9 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Store all borrowers for filtering
+        const allBorrowers = {{ borrowers|tojson|safe }};
+        
         // Data for charts
         const letterStatusLabels = ['Not Sent', 'Sent', 'Returned'];
         const letterStatusData = [
@@ -388,6 +414,7 @@
             chartConfig.data.datasets[0].data = letterStatusData;
             chartConfig.data.datasets[0].backgroundColor = letterStatusColors;
             chartConfig.options.plugins.title.text = 'Letter Status Distribution';
+            delete chartConfig.options.scales;
             
             mainChart = new Chart(mainChartCtx, chartConfig);
         });
@@ -462,6 +489,169 @@
             };
             
             mainChart = new Chart(mainChartCtx, chartConfig);
+        });
+        
+        // Function to render borrowers table
+        function renderBorrowersTable(borrowers, filteredBy = 'All Borrowers') {
+            const tableBody = document.querySelector('#borrowersTable tbody');
+            const tableContainer = document.querySelector('#borrowersTable');
+            const tableHeader = document.querySelector('.card-header h6');
+            
+            // Update table title with filter
+            tableHeader.textContent = filteredBy;
+            
+            // Clear existing table
+            tableBody.innerHTML = '';
+            
+            // Add export button if not exists
+            if (!document.getElementById('export-filtered')) {
+                const exportBtn = document.createElement('a');
+                exportBtn.id = 'export-filtered';
+                exportBtn.href = '#';
+                exportBtn.className = 'btn btn-sm btn-success ms-2';
+                exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i> Export Filtered Data';
+                exportBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    exportToExcel(borrowers, filteredBy);
+                });
+                
+                document.querySelector('.card-header .d-flex').appendChild(exportBtn);
+            }
+            
+            // Populate table with filtered data
+            if (borrowers.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="8" class="text-center py-4">No borrowers found matching this filter.</td>`;
+                tableBody.appendChild(emptyRow);
+            } else {
+                borrowers.forEach(borrower => {
+                    const row = document.createElement('tr');
+                    
+                    let letterStatus = '';
+                    if (borrower.letter_status === 'Not Send') {
+                        letterStatus = '<span class="badge bg-secondary">Not Sent</span>';
+                    } else if (borrower.letter_status === 'Send') {
+                        letterStatus = '<span class="badge bg-success">Sent</span>';
+                    } else if (borrower.letter_status === 'Returned Back') {
+                        letterStatus = '<span class="badge bg-danger">Returned</span>';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${borrower.serial_no}</td>
+                        <td class="devanagari">${borrower.borrower_name}</td>
+                        <td class="devanagari">${borrower.village_city || ''}</td>
+                        <td class="devanagari">${borrower.district || ''}</td>
+                        <td class="devanagari">${borrower.bank_name || ''}</td>
+                        <td>${borrower.loan_amount || ''}</td>
+                        <td class="letter-status">${letterStatus}</td>
+                        <td class="action-buttons">
+                            <a href="/borrower/view/${borrower.id}" class="btn btn-sm btn-info" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="/borrower/edit/${borrower.id}" class="btn btn-sm btn-warning" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="/documents/${borrower.id}" class="btn btn-sm btn-primary" title="Documents">
+                                <i class="fas fa-file-alt"></i>
+                            </a>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Make sure table is expanded
+            if (!tableContainer.classList.contains('show')) {
+                tableContainer.classList.add('show');
+            }
+        }
+        
+        // Function to filter borrowers by criteria
+        function filterBorrowers(criteria) {
+            let filtered = [];
+            
+            if (criteria === 'all') {
+                filtered = allBorrowers;
+                renderBorrowersTable(filtered, 'All Borrowers');
+            } 
+            else if (criteria === 'sent') {
+                filtered = allBorrowers.filter(b => b.letter_status === 'Send');
+                renderBorrowersTable(filtered, 'Letters Sent');
+            } 
+            else if (criteria === 'returned') {
+                filtered = allBorrowers.filter(b => b.letter_status === 'Returned Back');
+                renderBorrowersTable(filtered, 'Letters Returned');
+            } 
+            else if (criteria === 'not-sent') {
+                filtered = allBorrowers.filter(b => b.letter_status === 'Not Send');
+                renderBorrowersTable(filtered, 'Letters Not Sent');
+            }
+            
+            return filtered;
+        }
+        
+        // Function to export data to Excel
+        function exportToExcel(data, title) {
+            // Create form data to send to server
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(data));
+            formData.append('title', title);
+            
+            // Create a temporary form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/export/filtered';
+            form.style.display = 'none';
+            
+            const dataInput = document.createElement('input');
+            dataInput.type = 'hidden';
+            dataInput.name = 'data';
+            dataInput.value = JSON.stringify(data);
+            
+            const titleInput = document.createElement('input');
+            titleInput.type = 'hidden';
+            titleInput.name = 'title';
+            titleInput.value = title;
+            
+            form.appendChild(dataInput);
+            form.appendChild(titleInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        // Event listeners for filter cards
+        document.getElementById('filter-all-borrowers').addEventListener('click', function(e) {
+            e.preventDefault();
+            filterBorrowers('all');
+        });
+        
+        document.getElementById('filter-letters-sent').addEventListener('click', function(e) {
+            e.preventDefault();
+            filterBorrowers('sent');
+        });
+        
+        document.getElementById('filter-letters-returned').addEventListener('click', function(e) {
+            e.preventDefault();
+            filterBorrowers('returned');
+        });
+        
+        document.getElementById('filter-letters-not-sent').addEventListener('click', function(e) {
+            e.preventDefault();
+            filterBorrowers('not-sent');
+        });
+        
+        // Add hover effect to stat cards
+        document.querySelectorAll('.card-link').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.querySelector('.card').style.transform = 'translateY(-10px)';
+                this.querySelector('.card').style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.querySelector('.card').style.transform = 'translateY(-5px)';
+                this.querySelector('.card').style.boxShadow = '0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15)';
+            });
         });
     });
 </script>

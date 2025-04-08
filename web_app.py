@@ -546,6 +546,41 @@ def register_routes(app):
                         download_name=f'search_results_{datetime.now().strftime("%Y%m%d")}.xlsx',
                         as_attachment=True,
                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                        
+    @app.route('/export/filtered', methods=['POST'])
+    def export_filtered():
+        """Export filtered borrowers to Excel"""
+        data_json = request.form.get('data')
+        title = request.form.get('title', 'Filtered Data')
+        
+        if not data_json:
+            flash('No data to export', 'warning')
+            return redirect(url_for('index'))
+        
+        try:
+            data = json.loads(data_json)
+        except:
+            flash('Invalid data format', 'danger')
+            return redirect(url_for('index'))
+        
+        if not data:
+            flash('No data to export', 'warning')
+            return redirect(url_for('index'))
+        
+        # Generate Excel file in memory
+        output = io.BytesIO()
+        excel_handler.export_to_excel(data, output)
+        output.seek(0)
+        
+        # Create a clean filename
+        filename = title.replace(' ', '_').lower()
+        filename = ''.join(c for c in filename if c.isalnum() or c == '_')
+        
+        # Return the file
+        return send_file(output, 
+                        download_name=f'{filename}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx',
+                        as_attachment=True,
+                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     
     @app.route('/import', methods=['GET', 'POST'])
     def import_route():
