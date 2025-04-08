@@ -1,0 +1,82 @@
+"""
+Database models for the Borrower Management System
+"""
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import os
+
+db = SQLAlchemy()
+
+class Borrower(db.Model):
+    """Model for borrower information"""
+    __tablename__ = 'borrowers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    serial_no = db.Column(db.String(20), nullable=False)
+    date = db.Column(db.String(10), nullable=False)
+    reference = db.Column(db.String(100))
+    borrower_name = db.Column(db.String(255), nullable=False)
+    co_borrower_name = db.Column(db.String(255))
+    address_line1 = db.Column(db.String(255))
+    address_line2 = db.Column(db.String(255))
+    village_city = db.Column(db.String(100))
+    taluka = db.Column(db.String(100))
+    district = db.Column(db.String(100))
+    pin_code = db.Column(db.String(10))
+    mobile = db.Column(db.String(15))
+    bank_name = db.Column(db.String(100))
+    loan_amount = db.Column(db.String(20))
+    letter_status = db.Column(db.String(20), default='Not Send')
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationship with documents
+    documents = db.relationship('Document', backref='borrower', lazy=True, cascade="all, delete-orphan")
+    
+    def to_dict(self):
+        """Convert borrower object to dictionary"""
+        return {
+            'id': self.id,
+            'serial_no': self.serial_no,
+            'date': self.date,
+            'reference': self.reference,
+            'borrower_name': self.borrower_name,
+            'co_borrower_name': self.co_borrower_name,
+            'address_line1': self.address_line1,
+            'address_line2': self.address_line2,
+            'village_city': self.village_city,
+            'taluka': self.taluka,
+            'district': self.district,
+            'pin_code': self.pin_code,
+            'mobile': self.mobile,
+            'bank_name': self.bank_name,
+            'loan_amount': self.loan_amount,
+            'letter_status': self.letter_status,
+            'notes': self.notes,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
+        }
+
+
+class Document(db.Model):
+    """Model for document information"""
+    __tablename__ = 'documents'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    borrower_id = db.Column(db.Integer, db.ForeignKey('borrowers.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    original_filename = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    uploaded_at = db.Column(db.DateTime, default=datetime.now)
+    
+    def to_dict(self):
+        """Convert document object to dictionary"""
+        return {
+            'id': self.id,
+            'borrower_id': self.borrower_id,
+            'filename': self.filename,
+            'original_filename': self.original_filename,
+            'description': self.description,
+            'uploaded_at': self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') if self.uploaded_at else None
+        }

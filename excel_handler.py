@@ -3,10 +3,10 @@ Excel Handler module for the Borrower Management System.
 Handles importing and exporting borrower data to/from Excel files.
 """
 import openpyxl
-import database
+from openpyxl.styles import Alignment, Font, PatternFill
 from datetime import datetime
 import os
-import borrower_manager
+from models import db, Borrower
 
 def export_to_excel(borrowers, file_path_or_buffer):
     """
@@ -19,64 +19,61 @@ def export_to_excel(borrowers, file_path_or_buffer):
     Returns:
         bool: True if successful, False otherwise
     """
-    if not borrowers:
-        return False
-    
     try:
-        # Create a new Excel workbook
+        # Create a new workbook and select the active worksheet
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Borrowers"
+        ws.title = "Borrowers Data"
         
-        # Define headers
+        # Define column headers
         headers = [
-            'Serial No', 'Date', 'Reference',
-            'Borrower Name', 'Co-Borrower Name',
-            'Address Line 1', 'Address Line 2',
-            'Village/City', 'Taluka', 'District',
-            'PIN Code', 'Mobile No',
-            'Bank Name', 'Loan Amount', 'Letter Status',
-            'Notes'
+            "Sr. No.", "Date", "Reference", "Borrower Name", "Co-Borrower Name",
+            "Address Line 1", "Address Line 2", "Village/City", "Taluka",
+            "District", "PIN Code", "Mobile", "Bank Name", "Loan Amount",
+            "Letter Status", "Notes"
         ]
-        
-        # Field mapping for database to Excel
-        field_mapping = {
-            'serial_no': 'Serial No',
-            'date': 'Date',
-            'reference': 'Reference',
-            'borrower_name': 'Borrower Name',
-            'co_borrower_name': 'Co-Borrower Name',
-            'address_line1': 'Address Line 1',
-            'address_line2': 'Address Line 2',
-            'village_city': 'Village/City',
-            'taluka': 'Taluka',
-            'district': 'District',
-            'pin_code': 'PIN Code',
-            'mobile': 'Mobile No',
-            'bank_name': 'Bank Name',
-            'loan_amount': 'Loan Amount',
-            'letter_status': 'Letter Status',
-            'notes': 'Notes'
-        }
         
         # Write headers
         for col_num, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col_num)
             cell.value = header
-            # Apply header style
             cell.font = openpyxl.styles.Font(bold=True)
-            cell.fill = openpyxl.styles.PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
+            cell.fill = openpyxl.styles.PatternFill(start_color="FFCCCCCC", end_color="FFCCCCCC", fill_type="solid")
+            cell.alignment = openpyxl.styles.Alignment(horizontal="center", vertical="center")
         
-        # Write borrower data
+        # Write data
         for row_num, borrower in enumerate(borrowers, 2):
-            for col_num, field in enumerate(field_mapping.keys(), 1):
-                cell = ws.cell(row=row_num, column=col_num)
-                cell.value = borrower.get(field, '')
+            ws.cell(row=row_num, column=1).value = borrower['serial_no']
+            ws.cell(row=row_num, column=2).value = borrower['date']
+            ws.cell(row=row_num, column=3).value = borrower['reference']
+            ws.cell(row=row_num, column=4).value = borrower['borrower_name']
+            ws.cell(row=row_num, column=5).value = borrower['co_borrower_name']
+            ws.cell(row=row_num, column=6).value = borrower['address_line1']
+            ws.cell(row=row_num, column=7).value = borrower['address_line2']
+            ws.cell(row=row_num, column=8).value = borrower['village_city']
+            ws.cell(row=row_num, column=9).value = borrower['taluka']
+            ws.cell(row=row_num, column=10).value = borrower['district']
+            ws.cell(row=row_num, column=11).value = borrower['pin_code']
+            ws.cell(row=row_num, column=12).value = borrower['mobile']
+            ws.cell(row=row_num, column=13).value = borrower['bank_name']
+            ws.cell(row=row_num, column=14).value = borrower['loan_amount']
+            ws.cell(row=row_num, column=15).value = borrower['letter_status']
+            ws.cell(row=row_num, column=16).value = borrower['notes']
         
-        # Auto-adjust column widths
+        # Adjust column widths to fit content
         for col_num, _ in enumerate(headers, 1):
             column_letter = openpyxl.utils.get_column_letter(col_num)
-            ws.column_dimensions[column_letter].width = 15
+            ws.column_dimensions[column_letter].width = 15  # Set a default width
+            
+            # Adjust specific columns
+            if col_num in [1, 2, 11, 12, 14, 15]:  # Serial No, Date, PIN, Mobile, Loan, Status
+                ws.column_dimensions[column_letter].width = 12
+            elif col_num in [4, 5, 13]:  # Names, Bank Name
+                ws.column_dimensions[column_letter].width = 20
+            elif col_num in [6, 7]:  # Address lines
+                ws.column_dimensions[column_letter].width = 30
+            elif col_num == 16:  # Notes
+                ws.column_dimensions[column_letter].width = 40
         
         # Save the workbook
         if isinstance(file_path_or_buffer, str):
@@ -85,10 +82,10 @@ def export_to_excel(borrowers, file_path_or_buffer):
             wb.save(file_path_or_buffer)
         
         return True
-    
     except Exception as e:
-        print(f"Error exporting to Excel: {e}")
+        print(f"Error exporting to Excel: {str(e)}")
         return False
+
 
 def import_from_excel(file_path):
     """
@@ -100,100 +97,49 @@ def import_from_excel(file_path):
     Returns:
         int: Number of borrowers imported
     """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Excel file not found: {file_path}")
-    
     try:
-        # Load the Excel workbook
+        # Load the workbook
         wb = openpyxl.load_workbook(file_path)
         ws = wb.active
         
-        # Get headers from the first row
-        headers = []
-        for cell in ws[1]:
-            headers.append(cell.value)
+        # Skip header row and get data
+        row_count = 0
         
-        # Field mapping for Excel to database
-        field_mapping = {
-            'Serial No': 'serial_no',
-            'Date': 'date',
-            'Reference': 'reference',
-            'Borrower Name': 'borrower_name',
-            'Co-Borrower Name': 'co_borrower_name',
-            'Address Line 1': 'address_line1',
-            'Address Line 2': 'address_line2',
-            'Village/City': 'village_city',
-            'Taluka': 'taluka',
-            'District': 'district',
-            'PIN Code': 'pin_code',
-            'Mobile No': 'mobile',
-            'Bank Name': 'bank_name',
-            'Loan Amount': 'loan_amount',
-            'Letter Status': 'letter_status',
-            'Notes': 'notes'
-        }
-        
-        # Create a mapping of column indices to database fields
-        column_mapping = {}
-        for col_idx, header in enumerate(headers):
-            if header in field_mapping:
-                column_mapping[col_idx] = field_mapping[header]
-        
-        # Get the next available serial number if needed
-        next_serial_no = database.get_next_serial_no()
-        
-        # Process each row (skip the header row)
-        imported_count = 0
-        for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), 2):
-            borrower_data = {}
-            
-            # Check if the row has valid data (at least borrower name)
-            if not row or not any(row):
+        # Get all rows (skip header)
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if not row[0]:  # Skip empty rows (no serial number)
                 continue
+                
+            # Create a new borrower from the Excel data
+            borrower = Borrower(
+                serial_no=str(row[0]) if row[0] else "",
+                date=str(row[1]) if row[1] else datetime.now().strftime('%Y-%m-%d'),
+                reference=str(row[2]) if row[2] else "",
+                borrower_name=str(row[3]) if row[3] else "",
+                co_borrower_name=str(row[4]) if row[4] else "",
+                address_line1=str(row[5]) if row[5] else "",
+                address_line2=str(row[6]) if row[6] else "",
+                village_city=str(row[7]) if row[7] else "",
+                taluka=str(row[8]) if row[8] else "",
+                district=str(row[9]) if row[9] else "",
+                pin_code=str(row[10]) if row[10] else "",
+                mobile=str(row[11]) if row[11] else "",
+                bank_name=str(row[12]) if row[12] else "",
+                loan_amount=str(row[13]) if row[13] else "",
+                letter_status=str(row[14]) if row[14] else "Not Send",
+                notes=str(row[15]) if row[15] else ""
+            )
             
-            # Extract data from each cell
-            for col_idx, cell_value in enumerate(row):
-                if col_idx in column_mapping:
-                    field_name = column_mapping[col_idx]
-                    borrower_data[field_name] = str(cell_value) if cell_value is not None else ''
-            
-            # Ensure required fields are present
-            if not borrower_data.get('borrower_name'):
-                print(f"Skipping row {row_idx}: Missing borrower name")
-                continue
-            
-            # Set serial number if not provided
-            if not borrower_data.get('serial_no'):
-                borrower_data['serial_no'] = str(next_serial_no)
-                next_serial_no += 1
-            
-            # Set date if not provided
-            if not borrower_data.get('date'):
-                borrower_data['date'] = datetime.now().strftime('%Y-%m-%d')
-            
-            # Set default letter status if not provided
-            if not borrower_data.get('letter_status'):
-                borrower_data['letter_status'] = 'Not Send'
-            
-            # Validate and standardize the letter status
-            letter_status = borrower_data.get('letter_status', '').strip()
-            if letter_status.lower() in ['not send', 'not sent']:
-                borrower_data['letter_status'] = 'Not Send'
-            elif letter_status.lower() in ['send', 'sent']:
-                borrower_data['letter_status'] = 'Send'
-            elif letter_status.lower() in ['returned', 'returned back']:
-                borrower_data['letter_status'] = 'Returned Back'
-            else:
-                borrower_data['letter_status'] = 'Not Send'  # Default
-            
-            # Add the borrower to the database
-            borrower_id = borrower_manager.add_borrower(borrower_data)
-            
-            if borrower_id:
-                imported_count += 1
+            # Add to database
+            db.session.add(borrower)
+            row_count += 1
         
-        return imported_count
-    
+        # Commit all at once for better performance
+        db.session.commit()
+        
+        return row_count
     except Exception as e:
-        print(f"Error importing from Excel: {e}")
+        # Roll back any changes
+        db.session.rollback()
+        print(f"Error importing from Excel: {str(e)}")
         raise
