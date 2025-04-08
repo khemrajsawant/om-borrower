@@ -5,6 +5,7 @@ import re
 import os
 import shutil
 import tempfile
+import mimetypes
 from datetime import datetime
 import sqlite3
 
@@ -150,3 +151,86 @@ def create_temp_file(content, suffix=None):
         raise
     
     return temp_path
+
+def get_file_mime_type(file_path):
+    """
+    Get the MIME type of a file.
+    
+    Args:
+        file_path (str): Path to the file
+        
+    Returns:
+        str: MIME type of the file
+    """
+    mime_type, _ = mimetypes.guess_type(file_path)
+    return mime_type or 'application/octet-stream'
+
+def get_file_type_from_extension(filename):
+    """
+    Get the file type from the filename extension.
+    
+    Args:
+        filename (str): Filename
+        
+    Returns:
+        str: File type (extension without dot)
+    """
+    _, extension = os.path.splitext(filename)
+    return extension[1:].lower() if extension else ''
+
+def is_previewable(file_type):
+    """
+    Check if a file type is previewable in a browser.
+    
+    Args:
+        file_type (str): File type (extension without dot)
+        
+    Returns:
+        tuple: (is_previewable, preview_type)
+            - is_previewable: True if previewable, False otherwise
+            - preview_type: 'image', 'pdf', 'text', or None
+    """
+    # Ensure file_type is lowercase for comparison
+    file_type = file_type.lower() if file_type else ''
+    
+    # Image types
+    if file_type in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']:
+        return True, 'image'
+    
+    # PDF documents
+    if file_type == 'pdf':
+        return True, 'pdf'
+    
+    # Text files
+    if file_type in ['txt', 'csv', 'json', 'xml', 'md', 'html', 'htm', 'log']:
+        return True, 'text'
+    
+    # Not previewable
+    return False, None
+
+def get_preview_mode(mime_type):
+    """
+    Get the preview mode based on MIME type.
+    
+    Args:
+        mime_type (str): MIME type of the file
+        
+    Returns:
+        str: 'image', 'pdf', 'text', or None
+    """
+    if not mime_type:
+        return None
+    
+    if mime_type.startswith('image/'):
+        return 'image'
+    
+    if mime_type == 'application/pdf':
+        return 'pdf'
+    
+    if mime_type.startswith('text/') or mime_type in [
+        'application/json', 'application/xml', 
+        'application/javascript', 'application/csv'
+    ]:
+        return 'text'
+    
+    return None

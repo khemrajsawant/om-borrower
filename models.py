@@ -88,3 +88,26 @@ class Document(db.Model):
         """Get the file type from the filename extension"""
         _, extension = os.path.splitext(self.original_filename)
         return extension.lstrip('.').lower() if extension else 'unknown'
+        
+    def is_previewable(self):
+        """Check if the document is previewable in a browser"""
+        from utils import is_previewable
+        file_type = self.file_type or self.get_file_type()
+        if not file_type:
+            return False, None
+        
+        return is_previewable(file_type)
+        
+    def get_preview_url(self):
+        """Get the URL for previewing the document"""
+        is_preview, preview_type = self.is_previewable()
+        if not is_preview:
+            return None
+        
+        # Return the URL for the document
+        return f"/document/view/{self.id}"
+        
+    def get_preview_type(self):
+        """Get the preview type for the document"""
+        _, preview_type = self.is_previewable()
+        return preview_type

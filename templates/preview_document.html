@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .devanagari {
+        font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+    .preview-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .image-preview {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+    .pdf-preview {
+        width: 100%;
+        height: 800px;
+        border: none;
+    }
+    .text-preview {
+        width: 100%;
+        padding: 1rem;
+        white-space: pre-wrap;
+        font-family: monospace;
+        max-height: 800px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    .preview-actions {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    .file-info {
+        margin-bottom: 1.5rem;
+    }
+    .file-info .badge {
+        font-size: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h1 class="h2 mb-0">Document Preview</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('documents', borrower_id=borrower.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Documents
+        </a>
+        <a href="{{ url_for('view_document_route', doc_id=document.id, download=True) }}" class="btn btn-success">
+            <i class="fas fa-download"></i> Download
+        </a>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file me-2"></i> {{ document.original_filename }}</h5>
+                    <span class="badge bg-light text-dark">{{ document.file_type }}</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="preview-container">
+                    {% if preview_type == 'image' %}
+                        <img src="{{ url_for('view_document_route', doc_id=document.id) }}" class="image-preview" alt="{{ document.original_filename }}">
+                    {% elif preview_type == 'pdf' %}
+                        <iframe src="{{ url_for('view_document_route', doc_id=document.id) }}" class="pdf-preview"></iframe>
+                    {% elif preview_type == 'text' and text_content %}
+                        <div class="text-preview">{{ text_content }}</div>
+                    {% else %}
+                        <div class="p-5 text-center">
+                            <div class="display-1 text-muted mb-3">
+                                <i class="fas fa-file"></i>
+                            </div>
+                            <h3>Preview not available</h3>
+                            <p>You can download this file to view its contents.</p>
+                            <a href="{{ url_for('view_document_route', doc_id=document.id, download=True) }}" class="btn btn-primary">
+                                <i class="fas fa-download me-1"></i> Download File
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">File Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="file-info">
+                    <div class="mb-2">
+                        <strong>File Name:</strong><br>
+                        {{ document.original_filename }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>File Type:</strong><br>
+                        <span class="badge bg-info">{{ document.file_type }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Upload Date:</strong><br>
+                        {{ document.upload_date }}
+                    </div>
+                    {% if document.description %}
+                        <div class="mb-2">
+                            <strong>Description:</strong><br>
+                            <p class="devanagari mb-0">{{ document.description }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h5 class="mb-3">Borrower Information</h5>
+                <div class="mb-2">
+                    <strong>Serial No:</strong> {{ borrower.serial_no }}
+                </div>
+                <div class="mb-2">
+                    <strong>Name:</strong> <span class="devanagari">{{ borrower.borrower_name }}</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Village/City:</strong> <span class="devanagari">{{ borrower.village_city }}</span>
+                </div>
+                
+                <div class="preview-actions mt-4">
+                    <a href="{{ url_for('view_document_route', doc_id=document.id, download=True) }}" class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-download me-1"></i> Download
+                    </a>
+                    <a href="{{ url_for('documents', borrower_id=borrower.id) }}" class="btn btn-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> Back to Documents
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Add any specific JavaScript for the preview page
+    });
+</script>
+{% endblock %}

@@ -474,10 +474,59 @@ def register_routes(app):
             flash('Document file not found', 'danger')
             return redirect(url_for('documents', borrower_id=document.borrower_id))
         
-        # Return the file
+        # Check if the request wants to download instead of preview
+        download = request.args.get('download', 'false').lower() == 'true'
+        
+        # Get file MIME type for proper content type
+        mime_type = utils.get_file_mime_type(doc_path)
+        
+        # Return the file (as attachment for download, inline for preview)
         return send_file(doc_path, 
                         download_name=document.original_filename,
-                        as_attachment=True)
+                        as_attachment=download,
+                        mimetype=mime_type)
+    
+    @app.route('/document/preview/<int:doc_id>')
+    def preview_document_route(doc_id):
+        """Preview a document in a responsive page"""
+        document = Document.query.get(doc_id)
+        
+        if not document:
+            flash('Document not found', 'danger')
+            return redirect(url_for('index'))
+        
+        # Get document path
+        doc_path = os.path.join(app.config['UPLOAD_FOLDER'], document.filename)
+        
+        if not os.path.exists(doc_path):
+            flash('Document file not found', 'danger')
+            return redirect(url_for('documents', borrower_id=document.borrower_id))
+        
+        # Check if document is previewable
+        is_previewable, preview_type = document.is_previewable()
+        
+        if not is_previewable:
+            # If not previewable, redirect to download
+            return redirect(url_for('view_document_route', doc_id=doc_id, download=True))
+            
+        # Get file MIME type
+        mime_type = utils.get_file_mime_type(doc_path)
+        
+        # For text files, read the content and render it
+        text_content = None
+        if preview_type == 'text':
+            try:
+                with open(doc_path, 'r', encoding='utf-8') as file:
+                    text_content = file.read()
+            except:
+                flash('Cannot read text file content', 'warning')
+                
+        return render_template('preview_document.html', 
+                            document=document.to_dict(),
+                            borrower=document.borrower.to_dict(), 
+                            preview_type=preview_type,
+                            mime_type=mime_type,
+                            text_content=text_content)
     
     @app.route('/document/delete/<int:doc_id>', methods=['POST'])
     def delete_document_route(doc_id):
