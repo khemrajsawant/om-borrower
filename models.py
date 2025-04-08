@@ -69,6 +69,7 @@ class Document(db.Model):
     original_filename = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     uploaded_at = db.Column(db.DateTime, default=datetime.now)
+    file_type = db.Column(db.String(20))
     
     def to_dict(self):
         """Convert document object to dictionary"""
@@ -78,5 +79,12 @@ class Document(db.Model):
             'filename': self.filename,
             'original_filename': self.original_filename,
             'description': self.description,
-            'uploaded_at': self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') if self.uploaded_at else None
+            'uploaded_at': self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') if self.uploaded_at else None,
+            'upload_date': self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') if self.uploaded_at else None,
+            'file_type': self.file_type or self.get_file_type()
         }
+        
+    def get_file_type(self):
+        """Get the file type from the filename extension"""
+        _, extension = os.path.splitext(self.original_filename)
+        return extension.lstrip('.').lower() if extension else 'unknown'

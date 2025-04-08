@@ -73,18 +73,19 @@
                     <div class="card-header bg-light">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                {% if doc.file_type.lower() in ['pdf'] %}
+                                {% set file_type = doc.file_type or '' %}
+                                {% if file_type|lower in ['pdf'] %}
                                 <i class="fa-solid fa-file-pdf text-danger document-icon"></i>
-                                {% elif doc.file_type.lower() in ['doc', 'docx'] %}
+                                {% elif file_type|lower in ['doc', 'docx'] %}
                                 <i class="fa-solid fa-file-word text-primary document-icon"></i>
-                                {% elif doc.file_type.lower() in ['xls', 'xlsx'] %}
+                                {% elif file_type|lower in ['xls', 'xlsx'] %}
                                 <i class="fa-solid fa-file-excel text-success document-icon"></i>
-                                {% elif doc.file_type.lower() in ['jpg', 'jpeg', 'png', 'gif'] %}
+                                {% elif file_type|lower in ['jpg', 'jpeg', 'png', 'gif'] %}
                                 <i class="fa-solid fa-file-image text-info document-icon"></i>
                                 {% else %}
                                 <i class="fa-solid fa-file text-secondary document-icon"></i>
                                 {% endif %}
-                                <span class="ms-2">{{ doc.file_type.upper() }}</span>
+                                <span class="ms-2">{{ (file_type or '')|upper }}</span>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-danger" 

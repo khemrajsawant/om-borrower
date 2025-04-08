@@ -423,12 +423,17 @@ def register_routes(app):
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                     file.save(filepath)
                     
+                    # Get file extension to set file_type
+                    _, file_extension = os.path.splitext(original_filename)
+                    file_type = file_extension.lstrip('.').lower() if file_extension else 'unknown'
+                    
                     # Create document record in database
                     document = Document(
                         borrower_id=borrower_id,
                         filename=filename,
                         original_filename=original_filename,
-                        description=description
+                        description=description,
+                        file_type=file_type
                     )
                     
                     db.session.add(document)
