@@ -1,0 +1,245 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .upload-container {
+        border: 2px dashed #ccc;
+        padding: 30px;
+        text-align: center;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    .upload-container:hover {
+        border-color: #6c757d;
+        background-color: #f1f3f5;
+    }
+    .preview-container {
+        display: none;
+        margin-top: 15px;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background-color: #fff;
+    }
+    .download-template {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h2 mb-0">Import Borrowers</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Upload Excel File</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('import_route') }}" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <div class="upload-container" id="dropArea">
+                            <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+                            <h5>Drag and drop an Excel file here or click to select</h5>
+                            <p class="text-muted">Only .xlsx files are supported. Make sure the file follows the correct format.</p>
+                            <input type="file" name="excel_file" id="fileInput" class="form-control d-none" accept=".xlsx" required>
+                            <button type="button" class="btn btn-outline-primary mt-2" id="browseButton">
+                                <i class="fas fa-folder-open me-1"></i> Browse Files
+                            </button>
+                        </div>
+                        
+                        <div class="preview-container" id="previewContainer">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-excel fa-2x text-success me-3"></i>
+                                <div>
+                                    <h6 class="mb-1" id="fileName">filename.xlsx</h6>
+                                    <div class="small text-muted" id="fileDetails">File details</div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="removeFile">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> <strong>Warning:</strong> Importing a large number of records may take some time. Please do not refresh the page during the import process.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary" id="importButton" disabled>
+                            <i class="fas fa-file-import me-1"></i> Import Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">Import Instructions</h5>
+            </div>
+            <div class="card-body">
+                <h6>Before Importing:</h6>
+                <ul>
+                    <li>Make sure your Excel file follows the correct format</li>
+                    <li>The first row should contain header names</li>
+                    <li>Required columns: Borrower Name, Address Line 1, Village/City, District</li>
+                    <li>Make sure text is encoded properly for Marathi language</li>
+                </ul>
+                
+                <h6>Expected Columns:</h6>
+                <ul>
+                    <li>Serial No (generated automatically if not provided)</li>
+                    <li>Date</li>
+                    <li>Reference</li>
+                    <li>Borrower Name</li>
+                    <li>Co-Borrower Name</li>
+                    <li>Address Line 1</li>
+                    <li>Address Line 2</li>
+                    <li>Village/City</li>
+                    <li>Taluka</li>
+                    <li>District</li>
+                    <li>PIN Code</li>
+                    <li>Mobile No</li>
+                    <li>Bank Name</li>
+                    <li>Loan Amount</li>
+                    <li>Letter Status</li>
+                    <li>Notes</li>
+                </ul>
+                
+                <div class="download-template text-center">
+                    <h6>Need a template?</h6>
+                    <p class="text-muted">Download our Excel template to ensure correct formatting</p>
+                    <a href="#" class="btn btn-success btn-sm">
+                        <i class="fas fa-download me-1"></i> Download Template
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseButton = document.getElementById('browseButton');
+        const previewContainer = document.getElementById('previewContainer');
+        const fileName = document.getElementById('fileName');
+        const fileDetails = document.getElementById('fileDetails');
+        const removeFile = document.getElementById('removeFile');
+        const importButton = document.getElementById('importButton');
+        
+        // Click browse button to trigger file input
+        browseButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        // Remove file button
+        removeFile.addEventListener('click', function() {
+            fileInput.value = '';
+            previewContainer.style.display = 'none';
+            importButton.disabled = true;
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function highlight() {
+            dropArea.classList.add('bg-light');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('bg-light');
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        function handleFiles(files) {
+            if (files.length) {
+                const file = files[0];
+                
+                // Check if the file is an Excel file
+                if (!file.name.endsWith('.xlsx')) {
+                    alert('Please select an Excel (.xlsx) file.');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                displayFilePreview(file);
+                importButton.disabled = false;
+            }
+        }
+        
+        function displayFilePreview(file) {
+            // Update file name and details
+            fileName.textContent = file.name;
+            
+            // Format file size
+            let fileSize = file.size;
+            let sizeText = '';
+            if (fileSize < 1024) {
+                sizeText = fileSize + ' bytes';
+            } else if (fileSize < 1024 * 1024) {
+                sizeText = (fileSize / 1024).toFixed(2) + ' KB';
+            } else {
+                sizeText = (fileSize / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+            
+            fileDetails.textContent = sizeText;
+            
+            // Show preview container
+            previewContainer.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

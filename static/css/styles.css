@@ -1,0 +1,201 @@
+/* Custom styles for Maharashtra Lokadhikar Samiti - Borrower Management System */
+
+/* Devanagari font styling for Marathi text */
+.devanagari {
+    font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+/* Card styling */
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+/* Table styling */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.action-buttons {
+    white-space: nowrap;
+}
+
+.letter-status {
+    width: 100px;
+}
+
+/* Status badges */
+.badge {
+    padding: 7px 12px;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+/* Form styling */
+.form-label {
+    font-weight: 500;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+/* Upload container for document upload */
+.upload-container {
+    border: 2px dashed #ccc;
+    padding: 30px;
+    text-align: center;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.upload-container:hover {
+    border-color: #6c757d;
+    background-color: #f1f3f5;
+}
+
+/* Pagination styling */
+.pagination {
+    justify-content: center;
+}
+
+.page-link {
+    color: var(--primary-color);
+    border-radius: 5px;
+    margin: 0 3px;
+}
+
+.page-link:hover {
+    color: var(--secondary-color);
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Datalist suggestions custom styling */
+input::-webkit-calendar-picker-indicator {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+/* Custom button styling */
+.btn {
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+/* Flash message styling */
+.flash-messages {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 2000;
+    max-width: 350px;
+}
+
+.flash-message {
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Stats cards on dashboard */
+.stats-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.stats-card .icon {
+    font-size: 3em;
+    opacity: 0.5;
+}
+
+.stats-card h2 {
+    font-size: 2.5em;
+    margin: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .stats-card {
+        padding: 15px;
+    }
+    
+    .stats-card h2 {
+        font-size: 1.75em;
+    }
+    
+    .stats-card .icon {
+        font-size: 2.25em;
+    }
+}

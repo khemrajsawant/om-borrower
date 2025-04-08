@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2 text-center">
+            <h1 class="display-1 text-danger">{{ code }}</h1>
+            <h2 class="mb-4">{{ title }}</h2>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <p class="lead">{{ error }}</p>
+                    
+                    {% if code == 404 %}
+                    <p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+                    {% elif code == 500 %}
+                    <p>The server encountered an internal error and was unable to complete your request.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i> Return to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

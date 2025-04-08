@@ -2,8 +2,8 @@
 Borrower Manager module for the Borrower Management System.
 Handles CRUD operations for borrower data.
 """
+from database import execute_query
 from datetime import datetime
-from database import get_db_connection, get_next_serial_no, execute_query
 
 def add_borrower(borrower_data):
     """
@@ -15,53 +15,58 @@ def add_borrower(borrower_data):
     Returns:
         int: ID of the new borrower
     """
-    # Get next serial number
-    serial_no = get_next_serial_no()
+    # Make sure to convert loan_amount to a number
+    if borrower_data.get('loan_amount') and borrower_data['loan_amount'].strip():
+        try:
+            loan_amount = float(borrower_data['loan_amount'])
+            borrower_data['loan_amount'] = str(loan_amount)
+        except ValueError:
+            # If conversion fails, keep as is
+            pass
     
-    # Get current date if not provided
-    if not borrower_data.get('date'):
-        borrower_data['date'] = datetime.now().strftime('%Y-%m-%d')
+    # Current timestamp for created_at and updated_at
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-    # Connect to database
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    # Insert the borrower into the database
+    query = """
+    INSERT INTO borrowers (
+        serial_no, date, reference, 
+        borrower_name, co_borrower_name, 
+        address_line1, address_line2, 
+        village_city, taluka, district, 
+        pin_code, mobile, 
+        bank_name, loan_amount, letter_status,
+        notes, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
     
-    try:
-        # Insert new borrower
-        cursor.execute("""
-            INSERT INTO borrowers (
-                serial_no, date, reference, borrower_name, co_borrower_name,
-                address_line1, address_line2, village_city, taluka, district,
-                pin_code, mobile, bank_name, loan_amount, letter_status, notes
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            serial_no,
-            borrower_data.get('date'),
-            borrower_data.get('reference', ''),
-            borrower_data.get('borrower_name', ''),
-            borrower_data.get('co_borrower_name', ''),
-            borrower_data.get('address_line1', ''),
-            borrower_data.get('address_line2', ''),
-            borrower_data.get('village_city', ''),
-            borrower_data.get('taluka', ''),
-            borrower_data.get('district', ''),
-            borrower_data.get('pin_code', ''),
-            borrower_data.get('mobile', ''),
-            borrower_data.get('bank_name', ''),
-            borrower_data.get('loan_amount', '0'),
-            borrower_data.get('letter_status', 'Not Send'),
-            borrower_data.get('notes', '')
-        ))
-        
-        # Commit changes
-        conn.commit()
-        
-        # Get ID of new borrower
-        borrower_id = cursor.lastrowid
-        
-        return borrower_id
-    finally:
-        conn.close()
+    params = (
+        borrower_data.get('serial_no', ''),
+        borrower_data.get('date', ''),
+        borrower_data.get('reference', ''),
+        borrower_data.get('borrower_name', ''),
+        borrower_data.get('co_borrower_name', ''),
+        borrower_data.get('address_line1', ''),
+        borrower_data.get('address_line2', ''),
+        borrower_data.get('village_city', ''),
+        borrower_data.get('taluka', ''),
+        borrower_data.get('district', ''),
+        borrower_data.get('pin_code', ''),
+        borrower_data.get('mobile', ''),
+        borrower_data.get('bank_name', ''),
+        borrower_data.get('loan_amount', ''),
+        borrower_data.get('letter_status', 'Not Send'),
+        borrower_data.get('notes', ''),
+        now,
+        now
+    )
+    
+    # Execute the query and get the last insert ID
+    execute_query(query, params, commit=True)
+    
+    # Get the ID of the newly inserted borrower
+    result = execute_query("SELECT last_insert_rowid() as id", fetchall=True)
+    return result[0]['id'] if result else None
 
 def update_borrower(borrower_id, borrower_data):
     """
@@ -74,55 +79,67 @@ def update_borrower(borrower_id, borrower_data):
     Returns:
         bool: True if successful, False otherwise
     """
-    # Connect to database
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    # Make sure to convert loan_amount to a number
+    if borrower_data.get('loan_amount') and borrower_data['loan_amount'].strip():
+        try:
+            loan_amount = float(borrower_data['loan_amount'])
+            borrower_data['loan_amount'] = str(loan_amount)
+        except ValueError:
+            # If conversion fails, keep as is
+            pass
+    
+    # Current timestamp for updated_at
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # Update the borrower in the database
+    query = """
+    UPDATE borrowers SET
+        date = ?,
+        reference = ?,
+        borrower_name = ?,
+        co_borrower_name = ?,
+        address_line1 = ?,
+        address_line2 = ?,
+        village_city = ?,
+        taluka = ?,
+        district = ?,
+        pin_code = ?,
+        mobile = ?,
+        bank_name = ?,
+        loan_amount = ?,
+        letter_status = ?,
+        notes = ?,
+        updated_at = ?
+    WHERE id = ?
+    """
+    
+    params = (
+        borrower_data.get('date', ''),
+        borrower_data.get('reference', ''),
+        borrower_data.get('borrower_name', ''),
+        borrower_data.get('co_borrower_name', ''),
+        borrower_data.get('address_line1', ''),
+        borrower_data.get('address_line2', ''),
+        borrower_data.get('village_city', ''),
+        borrower_data.get('taluka', ''),
+        borrower_data.get('district', ''),
+        borrower_data.get('pin_code', ''),
+        borrower_data.get('mobile', ''),
+        borrower_data.get('bank_name', ''),
+        borrower_data.get('loan_amount', ''),
+        borrower_data.get('letter_status', 'Not Send'),
+        borrower_data.get('notes', ''),
+        now,
+        borrower_id
+    )
     
     try:
-        # Update borrower
-        cursor.execute("""
-            UPDATE borrowers SET
-                date = ?,
-                reference = ?,
-                borrower_name = ?,
-                co_borrower_name = ?,
-                address_line1 = ?,
-                address_line2 = ?,
-                village_city = ?,
-                taluka = ?,
-                district = ?,
-                pin_code = ?,
-                mobile = ?,
-                bank_name = ?,
-                loan_amount = ?,
-                letter_status = ?,
-                notes = ?
-            WHERE id = ?
-        """, (
-            borrower_data.get('date'),
-            borrower_data.get('reference', ''),
-            borrower_data.get('borrower_name', ''),
-            borrower_data.get('co_borrower_name', ''),
-            borrower_data.get('address_line1', ''),
-            borrower_data.get('address_line2', ''),
-            borrower_data.get('village_city', ''),
-            borrower_data.get('taluka', ''),
-            borrower_data.get('district', ''),
-            borrower_data.get('pin_code', ''),
-            borrower_data.get('mobile', ''),
-            borrower_data.get('bank_name', ''),
-            borrower_data.get('loan_amount', '0'),
-            borrower_data.get('letter_status', 'Not Send'),
-            borrower_data.get('notes', ''),
-            borrower_id
-        ))
-        
-        # Commit changes
-        conn.commit()
-        
-        return cursor.rowcount > 0
-    finally:
-        conn.close()
+        # Execute the query
+        execute_query(query, params, commit=True)
+        return True
+    except Exception as e:
+        print(f"Error updating borrower: {e}")
+        return False
 
 def delete_borrower(borrower_id):
     """
@@ -134,23 +151,15 @@ def delete_borrower(borrower_id):
     Returns:
         bool: True if successful, False otherwise
     """
-    # Connect to database
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
     try:
-        # Delete documents for this borrower
-        cursor.execute("DELETE FROM documents WHERE borrower_id = ?", (borrower_id,))
+        # Delete the borrower from the database
+        query = "DELETE FROM borrowers WHERE id = ?"
+        execute_query(query, (borrower_id,), commit=True)
         
-        # Delete borrower
-        cursor.execute("DELETE FROM borrowers WHERE id = ?", (borrower_id,))
-        
-        # Commit changes
-        conn.commit()
-        
-        return cursor.rowcount > 0
-    finally:
-        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error deleting borrower: {e}")
+        return False
 
 def get_borrower_by_id(borrower_id):
     """
@@ -162,19 +171,10 @@ def get_borrower_by_id(borrower_id):
     Returns:
         dict: Borrower information, or None if not found
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    query = "SELECT * FROM borrowers WHERE id = ?"
+    result = execute_query(query, (borrower_id,), fetchall=True)
     
-    try:
-        cursor.execute("SELECT * FROM borrowers WHERE id = ?", (borrower_id,))
-        result = cursor.fetchone()
-        
-        if result:
-            return dict(result)
-        else:
-            return None
-    finally:
-        conn.close()
+    return result[0] if result else None
 
 def get_all_borrowers():
     """
@@ -183,16 +183,8 @@ def get_all_borrowers():
     Returns:
         list: List of borrower dictionaries
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("SELECT * FROM borrowers ORDER BY serial_no DESC")
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    query = "SELECT * FROM borrowers ORDER BY serial_no DESC"
+    return execute_query(query, fetchall=True)
 
 def get_field_options(field=None):
     """
@@ -204,21 +196,19 @@ def get_field_options(field=None):
     Returns:
         dict: Dictionary of field options
     """
-    fields = [
-        'reference', 'village_city', 'taluka', 'district', 'bank_name'
-    ] if field is None else [field]
-    
+    fields = ['village_city', 'taluka', 'district', 'bank_name', 'reference']
     options = {}
     
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
+    if field and field in fields:
+        # Get options for a specific field
+        query = f"SELECT DISTINCT {field} FROM borrowers WHERE {field} IS NOT NULL AND {field} != '' ORDER BY {field}"
+        result = execute_query(query, fetchall=True)
+        options[field] = [row[field] for row in result]
+    else:
+        # Get options for all fields
         for f in fields:
-            cursor.execute(f"SELECT DISTINCT {f} FROM borrowers WHERE {f} != '' ORDER BY {f}")
-            results = cursor.fetchall()
-            options[f] = [row[0] for row in results]
-        
-        return options
-    finally:
-        conn.close()
+            query = f"SELECT DISTINCT {f} FROM borrowers WHERE {f} IS NOT NULL AND {f} != '' ORDER BY {f}"
+            result = execute_query(query, fetchall=True)
+            options[f] = [row[f] for row in result]
+    
+    return options

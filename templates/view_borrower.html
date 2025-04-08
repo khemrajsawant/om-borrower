@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .devanagari {
+        font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+    .info-label {
+        font-weight: 600;
+    }
+    .borrower-info-card {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h2 mb-0">Borrower Details</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+        <a href="{{ url_for('edit_borrower_route', id=borrower.id) }}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a href="{{ url_for('documents', borrower_id=borrower.id) }}" class="btn btn-primary">
+            <i class="fas fa-file-alt"></i> Documents
+        </a>
+        <button type="button" class="btn btn-danger" 
+                data-bs-toggle="modal" 
+                data-bs-target="#deleteModal" 
+                data-borrower-id="{{ borrower.id }}"
+                data-borrower-name="{{ borrower.borrower_name }}">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm borrower-info-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Basic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Serial No:</div>
+                    <div class="col-md-8">{{ borrower.serial_no }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Date:</div>
+                    <div class="col-md-8">{{ borrower.date }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Reference:</div>
+                    <div class="col-md-8">{{ borrower.reference }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Borrower Name:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.borrower_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Co-Borrower Name:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.co_borrower_name }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm borrower-info-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Loan Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Bank Name:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.bank_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Loan Amount:</div>
+                    <div class="col-md-8">{{ borrower.loan_amount }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Letter Status:</div>
+                    <div class="col-md-8">
+                        {% if borrower.letter_status == 'Not Send' %}
+                        <span class="badge bg-secondary">Not Sent</span>
+                        {% elif borrower.letter_status == 'Send' %}
+                        <span class="badge bg-success">Sent</span>
+                        {% elif borrower.letter_status == 'Returned Back' %}
+                        <span class="badge bg-danger">Returned</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm borrower-info-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Address Line 1:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.address_line1 }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Address Line 2:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.address_line2 }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Village/City:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.village_city }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Taluka:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.taluka }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">District:</div>
+                    <div class="col-md-8 devanagari">{{ borrower.district }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">PIN Code:</div>
+                    <div class="col-md-8">{{ borrower.pin_code }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 info-label">Mobile No:</div>
+                    <div class="col-md-8">{{ borrower.mobile }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm borrower-info-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Notes</h5>
+            </div>
+            <div class="card-body">
+                <div class="devanagari">{{ borrower.notes if borrower.notes else 'No notes available.' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the borrower <strong id="borrowerNameToDelete" class="devanagari"></strong>?</p>
+                <p class="text-danger">This action cannot be undone and will also delete all associated documents.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" action="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set up delete modal
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var borrowerId = button.getAttribute('data-borrower-id');
+            var borrowerName = button.getAttribute('data-borrower-name');
+            
+            var nameElement = document.getElementById('borrowerNameToDelete');
+            nameElement.textContent = borrowerName;
+            
+            var form = document.getElementById('deleteForm');
+            form.action = "/borrower/delete/" + borrowerId;
+        });
+    });
+</script>
+{% endblock %}

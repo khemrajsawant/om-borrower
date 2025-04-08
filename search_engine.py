@@ -2,7 +2,7 @@
 Search Engine module for the Borrower Management System.
 Handles searching for borrowers based on various criteria.
 """
-from database import get_db_connection
+from database import execute_query
 
 def search_borrowers(criteria):
     """
@@ -14,34 +14,28 @@ def search_borrowers(criteria):
     Returns:
         list: List of borrower dictionaries matching the criteria
     """
-    # Build SQL query
-    query = "SELECT * FROM borrowers WHERE 1=1"
+    if not criteria:
+        return []
+    
+    # Build the query
+    query = "SELECT * FROM borrowers WHERE "
+    conditions = []
     params = []
     
-    # Add criteria to query
     for field, value in criteria.items():
         if value:
-            if field in ['village_city', 'taluka', 'district', 'bank_name', 'reference']:
-                query += f" AND {field} = ?"
-                params.append(value)
-            elif field in ['borrower_name', 'co_borrower_name']:
-                query += f" AND {field} LIKE ?"
-                params.append(f"%{value}%")
+            # Case-insensitive search with partial matches
+            conditions.append(f"{field} LIKE ?")
+            params.append(f"%{value}%")
     
-    # Add order by
+    if not conditions:
+        return []
+    
+    query += " AND ".join(conditions)
     query += " ORDER BY serial_no DESC"
     
-    # Execute query
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute(query, params)
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    # Execute the search
+    return execute_query(query, tuple(params), fetchall=True)
 
 def advanced_search(search_text):
     """
@@ -56,31 +50,30 @@ def advanced_search(search_text):
     if not search_text:
         return []
     
-    # Fields to search
+    # Fields to search in
     fields = [
-        'borrower_name', 'co_borrower_name', 'address_line1', 'address_line2',
-        'village_city', 'taluka', 'district', 'bank_name', 'reference'
+        'serial_no', 'reference', 
+        'borrower_name', 'co_borrower_name',
+        'address_line1', 'address_line2',
+        'village_city', 'taluka', 'district',
+        'pin_code', 'mobile', 'bank_name',
+        'loan_amount', 'notes'
     ]
     
-    # Build SQL query
+    # Build the query
     query = "SELECT * FROM borrowers WHERE "
-    query += " OR ".join([f"{field} LIKE ?" for field in fields])
+    conditions = []
+    params = []
+    
+    for field in fields:
+        conditions.append(f"{field} LIKE ?")
+        params.append(f"%{search_text}%")
+    
+    query += " OR ".join(conditions)
     query += " ORDER BY serial_no DESC"
     
-    # Create parameters
-    params = [f"%{search_text}%"] * len(fields)
-    
-    # Execute query
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute(query, params)
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    # Execute the search
+    return execute_query(query, tuple(params), fetchall=True)
 
 def search_by_field(field, value):
     """
@@ -96,21 +89,8 @@ def search_by_field(field, value):
     if not field or not value:
         return []
     
-    # Build SQL query
     query = f"SELECT * FROM borrowers WHERE {field} LIKE ? ORDER BY serial_no DESC"
-    params = [f"%{value}%"]
-    
-    # Execute query
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute(query, params)
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    return execute_query(query, (f"%{value}%",), fetchall=True)
 
 def search_by_letter_status(status):
     """
@@ -125,21 +105,8 @@ def search_by_letter_status(status):
     if not status:
         return []
     
-    # Build SQL query
     query = "SELECT * FROM borrowers WHERE letter_status = ? ORDER BY serial_no DESC"
-    params = [status]
-    
-    # Execute query
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute(query, params)
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    return execute_query(query, (status,), fetchall=True)
 
 def search_by_date_range(start_date, end_date):
     """
@@ -155,18 +122,5 @@ def search_by_date_range(start_date, end_date):
     if not start_date or not end_date:
         return []
     
-    # Build SQL query
-    query = "SELECT * FROM borrowers WHERE date >= ? AND date <= ? ORDER BY serial_no DESC"
-    params = [start_date, end_date]
-    
-    # Execute query
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute(query, params)
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    query = "SELECT * FROM borrowers WHERE date BETWEEN ? AND ? ORDER BY date DESC"
+    return execute_query(query, (start_date, end_date), fetchall=True)

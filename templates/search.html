@@ -1,0 +1,255 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .devanagari {
+        font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .action-buttons {
+        white-space: nowrap;
+    }
+    .search-results-title {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h2 mb-0">Search Borrowers</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <ul class="nav nav-tabs card-header-tabs" id="searchTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {{ 'active' if search_params is not defined or search_params.get('search_type') != 'advanced' else '' }}" 
+                        id="criteria-tab" data-bs-toggle="tab" data-bs-target="#criteria" type="button" role="tab" aria-selected="true">
+                    <i class="fas fa-filter me-1"></i> Search by Criteria
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {{ 'active' if search_params is defined and search_params.get('search_type') == 'advanced' else '' }}" 
+                        id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab" aria-selected="false">
+                    <i class="fas fa-search-plus me-1"></i> Advanced Search
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="searchTabContent">
+            <!-- Criteria-based search form -->
+            <div class="tab-pane fade {{ 'show active' if search_params is not defined or search_params.get('search_type') != 'advanced' else '' }}" id="criteria" role="tabpanel">
+                <form method="POST" action="{{ url_for('search_results') }}">
+                    <input type="hidden" name="search_type" value="criteria">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="village_city" class="form-label">Village/City</label>
+                            <input type="text" class="form-control devanagari" id="village_city" name="village_city" list="village_city_options"
+                                   value="{{ search_params.get('village_city', '') if search_params is defined else '' }}">
+                            <datalist id="village_city_options">
+                                {% for option in options.get('village_city', []) %}
+                                    <option value="{{ option }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="taluka" class="form-label">Taluka</label>
+                            <input type="text" class="form-control devanagari" id="taluka" name="taluka" list="taluka_options"
+                                   value="{{ search_params.get('taluka', '') if search_params is defined else '' }}">
+                            <datalist id="taluka_options">
+                                {% for option in options.get('taluka', []) %}
+                                    <option value="{{ option }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="district" class="form-label">District</label>
+                            <input type="text" class="form-control devanagari" id="district" name="district" list="district_options"
+                                   value="{{ search_params.get('district', '') if search_params is defined else '' }}">
+                            <datalist id="district_options">
+                                {% for option in options.get('district', []) %}
+                                    <option value="{{ option }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="bank_name" class="form-label">Bank Name</label>
+                            <input type="text" class="form-control devanagari" id="bank_name" name="bank_name" list="bank_name_options"
+                                   value="{{ search_params.get('bank_name', '') if search_params is defined else '' }}">
+                            <datalist id="bank_name_options">
+                                {% for option in options.get('bank_name', []) %}
+                                    <option value="{{ option }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="reference" class="form-label">Reference</label>
+                            <input type="text" class="form-control" id="reference" name="reference" list="reference_options"
+                                   value="{{ search_params.get('reference', '') if search_params is defined else '' }}">
+                            <datalist id="reference_options">
+                                {% for option in options.get('reference', []) %}
+                                    <option value="{{ option }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="borrower_name" class="form-label">Borrower Name</label>
+                            <input type="text" class="form-control devanagari" id="borrower_name" name="borrower_name"
+                                   value="{{ search_params.get('borrower_name', '') if search_params is defined else '' }}">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="co_borrower_name" class="form-label">Co-Borrower Name</label>
+                            <input type="text" class="form-control devanagari" id="co_borrower_name" name="co_borrower_name"
+                                   value="{{ search_params.get('co_borrower_name', '') if search_params is defined else '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo me-1"></i> Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Advanced search form -->
+            <div class="tab-pane fade {{ 'show active' if search_params is defined and search_params.get('search_type') == 'advanced' else '' }}" id="advanced" role="tabpanel">
+                <form method="POST" action="{{ url_for('search_results') }}">
+                    <input type="hidden" name="search_type" value="advanced">
+                    
+                    <div class="mb-3">
+                        <label for="search_text" class="form-label">Search Text</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control devanagari" id="search_text" name="search_text" 
+                                   placeholder="Enter borrower name, address, village, district, etc."
+                                   value="{{ search_params.get('search_text', '') if search_params is defined else '' }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                        <div class="form-text">Search across all borrower information including name, address, village, district, etc.</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<h2 class="h4 search-results-title">Search Results <span class="badge bg-primary">{{ results|length }}</span></h2>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <span>Found {{ results|length }} borrowers</span>
+            <form method="POST" action="{{ url_for('export_search_results') }}">
+                <input type="hidden" name="results_json" value="{{ results|tojson }}">
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel me-1"></i> Export Results
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Sr. No</th>
+                        <th>Borrower Name</th>
+                        <th>Village/City</th>
+                        <th>District</th>
+                        <th>Bank</th>
+                        <th>Loan Amount</th>
+                        <th>Letter Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrower in results %}
+                    <tr>
+                        <td>{{ borrower.serial_no }}</td>
+                        <td class="devanagari">{{ borrower.borrower_name }}</td>
+                        <td class="devanagari">{{ borrower.village_city }}</td>
+                        <td class="devanagari">{{ borrower.district }}</td>
+                        <td class="devanagari">{{ borrower.bank_name }}</td>
+                        <td>{{ borrower.loan_amount }}</td>
+                        <td>
+                            {% if borrower.letter_status == 'Not Send' %}
+                            <span class="badge bg-secondary">Not Sent</span>
+                            {% elif borrower.letter_status == 'Send' %}
+                            <span class="badge bg-success">Sent</span>
+                            {% elif borrower.letter_status == 'Returned Back' %}
+                            <span class="badge bg-danger">Returned</span>
+                            {% endif %}
+                        </td>
+                        <td class="action-buttons">
+                            <a href="{{ url_for('view_borrower', id=borrower.id) }}" class="btn btn-sm btn-info" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('edit_borrower_route', id=borrower.id) }}" class="btn btn-sm btn-warning" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('documents', borrower_id=borrower.id) }}" class="btn btn-sm btn-primary" title="Documents">
+                                <i class="fas fa-file-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% elif request.method == 'POST' %}
+<div class="alert alert-info mt-4">
+    <i class="fas fa-info-circle me-2"></i> No borrowers found matching your search criteria.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make sure the correct tab is active based on form submission
+        var searchTabs = document.getElementById('searchTabs');
+        var triggerTabList = [].slice.call(searchTabs.querySelectorAll('button'));
+        
+        triggerTabList.forEach(function (triggerEl) {
+            var tabTrigger = new bootstrap.Tab(triggerEl);
+            
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+    .devanagari {
+        font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+    .document-icon {
+        font-size: 1.5em;
+    }
+    .doc-card {
+        transition: transform 0.2s ease;
+    }
+    .doc-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h2 mb-0">Documents for <span class="devanagari">{{ borrower.borrower_name }}</span></h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+        <a href="{{ url_for('view_borrower', id=borrower.id) }}" class="btn btn-info">
+            <i class="fas fa-user"></i> Borrower Details
+        </a>
+        <a href="{{ url_for('upload_document_route', borrower_id=borrower.id) }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload Document
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Borrower Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Serial No:</strong> {{ borrower.serial_no }}
+            </div>
+            <div class="col-md-4">
+                <strong>Reference:</strong> {{ borrower.reference }}
+            </div>
+            <div class="col-md-4">
+                <strong>Date:</strong> {{ borrower.date }}
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-4">
+                <strong>Name:</strong> <span class="devanagari">{{ borrower.borrower_name }}</span>
+            </div>
+            <div class="col-md-4">
+                <strong>Village/City:</strong> <span class="devanagari">{{ borrower.village_city }}</span>
+            </div>
+            <div class="col-md-4">
+                <strong>District:</strong> <span class="devanagari">{{ borrower.district }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% if documents %}
+        {% for doc in documents %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100 doc-card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if doc.file_type.lower() in ['pdf'] %}
+                                <i class="fa-solid fa-file-pdf text-danger document-icon"></i>
+                                {% elif doc.file_type.lower() in ['doc', 'docx'] %}
+                                <i class="fa-solid fa-file-word text-primary document-icon"></i>
+                                {% elif doc.file_type.lower() in ['xls', 'xlsx'] %}
+                                <i class="fa-solid fa-file-excel text-success document-icon"></i>
+                                {% elif doc.file_type.lower() in ['jpg', 'jpeg', 'png', 'gif'] %}
+                                <i class="fa-solid fa-file-image text-info document-icon"></i>
+                                {% else %}
+                                <i class="fa-solid fa-file text-secondary document-icon"></i>
+                                {% endif %}
+                                <span class="ms-2">{{ doc.file_type.upper() }}</span>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteDocModal" 
+                                        data-doc-id="{{ doc.id }}"
+                                        data-doc-name="{{ doc.original_filename }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate">{{ doc.original_filename }}</h5>
+                        <p class="card-text small text-muted mb-2">
+                            <i class="fas fa-calendar-alt me-1"></i> Uploaded: {{ doc.upload_date }}
+                        </p>
+                        {% if doc.description %}
+                        <p class="card-text devanagari">{{ doc.description }}</p>
+                        {% else %}
+                        <p class="card-text text-muted fst-italic">No description</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{{ url_for('view_document_route', doc_id=doc.id) }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-download me-1"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No documents found for this borrower. 
+                <a href="{{ url_for('upload_document_route', borrower_id=borrower.id) }}">Upload a document</a> to get started.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Delete Document Confirmation Modal -->
+<div class="modal fade" id="deleteDocModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirm Delete Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the document <strong id="documentNameToDelete"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteDocForm" method="POST" action="">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set up delete document modal
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteModal = document.getElementById('deleteDocModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var docId = button.getAttribute('data-doc-id');
+            var docName = button.getAttribute('data-doc-name');
+            
+            var nameElement = document.getElementById('documentNameToDelete');
+            nameElement.textContent = docName;
+            
+            var form = document.getElementById('deleteDocForm');
+            form.action = "/document/delete/" + docId;
+        });
+    });
+</script>
+{% endblock %}

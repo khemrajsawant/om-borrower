@@ -2,10 +2,12 @@
 Document Handler module for the Borrower Management System.
 Handles document upload, retrieval, and management.
 """
+from database import execute_query
 import os
 import shutil
 from datetime import datetime
-from database import get_db_connection, create_document_directory
+import uuid
+import utils
 
 def upload_document(borrower_id, file_path, description=""):
     """
@@ -19,51 +21,56 @@ def upload_document(borrower_id, file_path, description=""):
     Returns:
         int: ID of the uploaded document
     """
-    # Create document directory if it doesn't exist
-    doc_dir = create_document_directory()
-    
-    # Get file information
-    filename = os.path.basename(file_path)
-    _, ext = os.path.splitext(filename)
-    
-    # Create unique filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    new_filename = f"{borrower_id}_{timestamp}{ext}"
-    new_file_path = os.path.join(doc_dir, new_filename)
-    
-    # Copy file to document directory
-    shutil.copy2(file_path, new_file_path)
-    
-    # Connect to database
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
     try:
-        # Insert document record
-        cursor.execute("""
-            INSERT INTO documents (
-                borrower_id, filename, original_filename, file_path, 
-                upload_date, description, file_type
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
+        # Generate a unique filename for storage
+        original_filename = os.path.basename(file_path)
+        file_extension = os.path.splitext(original_filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        
+        # Define target path
+        upload_folder = os.path.join('data', 'documents')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+        
+        target_path = os.path.join(upload_folder, unique_filename)
+        
+        # Copy the file to the target path
+        shutil.copy2(file_path, target_path)
+        
+        # Get file type
+        file_type = file_extension.lstrip('.').lower()
+        
+        # Current timestamp for upload date
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Insert document record into the database
+        query = """
+        INSERT INTO documents (
+            borrower_id, filename, original_filename, 
+            file_path, upload_date, description, file_type
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """
+        
+        params = (
             borrower_id,
-            new_filename,
-            filename,
-            new_file_path,
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            unique_filename,
+            original_filename,
+            target_path,
+            now,
             description,
-            ext.lstrip('.')
-        ))
+            file_type
+        )
         
-        # Commit changes
-        conn.commit()
+        # Execute the query
+        execute_query(query, params, commit=True)
         
-        # Get ID of new document
-        doc_id = cursor.lastrowid
-        
-        return doc_id
-    finally:
-        conn.close()
+        # Get the ID of the newly inserted document
+        result = execute_query("SELECT last_insert_rowid() as id", fetchall=True)
+        return result[0]['id'] if result else None
+    
+    except Exception as e:
+        print(f"Error uploading document: {e}")
+        return None
 
 def get_documents_for_borrower(borrower_id):
     """
@@ -75,22 +82,15 @@ def get_documents_for_borrower(borrower_id):
     Returns:
         list: List of document dictionaries
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    query = """
+    SELECT id, borrower_id, filename, original_filename, 
+           file_path, upload_date, description, file_type
+    FROM documents
+    WHERE borrower_id = ?
+    ORDER BY upload_date DESC
+    """
     
-    try:
-        cursor.execute("""
-            SELECT id, borrower_id, filename, original_filename, 
-                   upload_date, description, file_type
-            FROM documents 
-            WHERE borrower_id = ?
-            ORDER BY upload_date DESC
-        """, (borrower_id,))
-        results = cursor.fetchall()
-        
-        return [dict(row) for row in results]
-    finally:
-        conn.close()
+    return execute_query(query, (borrower_id,), fetchall=True)
 
 def get_document_by_id(doc_id):
     """
@@ -102,24 +102,15 @@ def get_document_by_id(doc_id):
     Returns:
         dict: Document information, or None if not found
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    query = """
+    SELECT id, borrower_id, filename, original_filename, 
+           file_path, upload_date, description, file_type
+    FROM documents
+    WHERE id = ?
+    """
     
-    try:
-        cursor.execute("""
-            SELECT id, borrower_id, filename, original_filename, file_path,
-                   upload_date, description, file_type
-            FROM documents 
-            WHERE id = ?
-        """, (doc_id,))
-        result = cursor.fetchone()
-        
-        if result:
-            return dict(result)
-        else:
-            return None
-    finally:
-        conn.close()
+    result = execute_query(query, (doc_id,), fetchall=True)
+    return result[0] if result else None
 
 def delete_document(doc_id):
     """
@@ -131,27 +122,24 @@ def delete_document(doc_id):
     Returns:
         bool: True if successful, False otherwise
     """
-    # Get document information
-    doc = get_document_by_id(doc_id)
-    
-    if not doc:
-        return False
-    
-    # Delete file
-    if os.path.exists(doc['file_path']):
-        os.remove(doc['file_path'])
-    
-    # Connect to database
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
     try:
-        # Delete document record
-        cursor.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
+        # First, get the document info to delete the file
+        document = get_document_by_id(doc_id)
         
-        # Commit changes
-        conn.commit()
+        if not document:
+            return False
         
-        return cursor.rowcount > 0
-    finally:
-        conn.close()
+        # Delete the physical file
+        file_path = os.path.join('data', 'documents', document['filename'])
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        
+        # Delete the document record from the database
+        query = "DELETE FROM documents WHERE id = ?"
+        execute_query(query, (doc_id,), commit=True)
+        
+        return True
+    
+    except Exception as e:
+        print(f"Error deleting document: {e}")
+        return False

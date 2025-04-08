@@ -2,16 +2,15 @@
 Database module for the Borrower Management System.
 Handles SQLite database connections and initialization.
 """
-import os
 import sqlite3
-from datetime import datetime
+import os
 
 def get_db_path():
     """
     Get the path to the SQLite database file.
     Creates the data directory if it doesn't exist.
     """
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+    data_dir = os.path.join(os.getcwd(), 'data')
     
     # Create data directory if it doesn't exist
     if not os.path.exists(data_dir):
@@ -25,22 +24,20 @@ def get_db_connection():
     Returns a connection object.
     """
     conn = sqlite3.connect(get_db_path())
-    conn.row_factory = sqlite3.Row  # Return rows as dictionaries
+    conn.row_factory = sqlite3.Row  # This allows accessing columns by name
     return conn
 
 def init_db():
     """
     Initialize the database by creating tables if they don't exist.
     """
-    # Get database schema from schema.sql
-    schema_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'schema.sql')
-    
-    with open(schema_path, 'r') as f:
-        schema = f.read()
-    
-    # Connect to database and create tables
     conn = get_db_connection()
-    conn.executescript(schema)
+    
+    # Read schema from file
+    schema_path = os.path.join(os.getcwd(), 'schema.sql')
+    with open(schema_path, 'r') as f:
+        conn.executescript(f.read())
+    
     conn.commit()
     conn.close()
 
@@ -67,10 +64,18 @@ def execute_query(query, params=(), fetchall=False, commit=False):
             conn.commit()
         
         if fetchall:
-            result = cursor.fetchall()
-            return [dict(row) for row in result]
+            result = [dict(row) for row in cursor.fetchall()]
+            return result
+        elif cursor.description:
+            # If there's a description but not fetchall, get the first row
+            row = cursor.fetchone()
+            return dict(row) if row else None
         
         return None
+    except Exception as e:
+        if commit:
+            conn.rollback()
+        raise e
     finally:
         conn.close()
 
@@ -78,28 +83,18 @@ def get_next_serial_no():
     """
     Get the next available serial number for a borrower.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    result = execute_query("SELECT MAX(serial_no) as max_serial FROM borrowers", fetchall=True)
     
-    try:
-        cursor.execute("SELECT MAX(serial_no) FROM borrowers")
-        result = cursor.fetchone()
-        
-        if result and result[0] is not None:
-            return result[0] + 1
-        else:
-            return 1
-    finally:
-        conn.close()
+    if result and result[0]['max_serial'] is not None:
+        return int(result[0]['max_serial']) + 1
+    else:
+        return 1  # First serial number
 
 def create_document_directory():
     """
     Create directory for storing uploaded documents.
     """
-    doc_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'documents')
+    doc_dir = os.path.join(os.getcwd(), 'data', 'documents')
     
-    # Create directory if it doesn't exist
     if not os.path.exists(doc_dir):
         os.makedirs(doc_dir)
-    
-    return doc_dir

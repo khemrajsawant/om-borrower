@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 from datetime import datetime
+import sqlite3
 
 def is_valid_pin_code(pin_code):
     """
@@ -17,6 +18,9 @@ def is_valid_pin_code(pin_code):
     Returns:
         bool: True if valid, False otherwise
     """
+    if not pin_code:
+        return True  # PIN code is optional
+    
     return bool(re.match(r'^\d{6}$', pin_code))
 
 def is_valid_mobile(mobile):
@@ -29,6 +33,9 @@ def is_valid_mobile(mobile):
     Returns:
         bool: True if valid, False otherwise
     """
+    if not mobile:
+        return True  # Mobile number is optional
+    
     return bool(re.match(r'^\d{10}$', mobile))
 
 def is_valid_loan_amount(amount):
@@ -41,10 +48,13 @@ def is_valid_loan_amount(amount):
     Returns:
         bool: True if valid, False otherwise
     """
+    if not amount:
+        return True  # Loan amount is optional
+    
     try:
         float(amount)
         return True
-    except (ValueError, TypeError):
+    except ValueError:
         return False
 
 def format_date(date_str):
@@ -60,20 +70,18 @@ def format_date(date_str):
     if not date_str:
         return datetime.now().strftime('%Y-%m-%d')
     
-    try:
-        date_formats = ['%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%Y/%m/%d']
-        
-        for fmt in date_formats:
-            try:
-                return datetime.strptime(date_str, fmt).strftime('%Y-%m-%d')
-            except ValueError:
-                continue
-        
-        # If no format matches, return original
-        return date_str
+    # Try to parse common date formats
+    formats = ['%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%m/%d/%Y', '%Y/%m/%d']
     
-    except Exception:
-        return datetime.now().strftime('%Y-%m-%d')
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            return dt.strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    
+    # If no format matches, return original
+    return date_str
 
 def create_backup(db_path):
     """
@@ -86,21 +94,22 @@ def create_backup(db_path):
         str: Path to the backup file
     """
     if not os.path.exists(db_path):
-        return None
+        raise FileNotFoundError(f"Database file not found: {db_path}")
     
     # Create backup directory if it doesn't exist
     backup_dir = os.path.join(os.path.dirname(db_path), 'backups')
     if not os.path.exists(backup_dir):
         os.makedirs(backup_dir)
     
-    # Create backup filename with timestamp
+    # Generate backup filename with timestamp
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    backup_file = os.path.join(backup_dir, f'borrowers_{timestamp}.db')
+    backup_filename = f"borrowers_backup_{timestamp}.db"
+    backup_path = os.path.join(backup_dir, backup_filename)
     
-    # Copy database to backup file
-    shutil.copy2(db_path, backup_file)
+    # Create backup
+    shutil.copy2(db_path, backup_path)
     
-    return backup_file
+    return backup_path
 
 def sanitize_filename(filename):
     """
@@ -112,15 +121,13 @@ def sanitize_filename(filename):
     Returns:
         str: Sanitized filename
     """
-    # Remove invalid characters
-    valid_chars = '-_.() abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    sanitized = ''.join(c for c in filename if c in valid_chars)
+    # Replace spaces with underscores
+    filename = filename.replace(' ', '_')
     
-    # Ensure filename is not empty
-    if not sanitized:
-        sanitized = 'file'
+    # Remove any characters that are not alphanumeric, period, hyphen, or underscore
+    filename = re.sub(r'[^\w\-\.]', '', filename)
     
-    return sanitized
+    return filename
 
 def create_temp_file(content, suffix=None):
     """
@@ -133,16 +140,13 @@ def create_temp_file(content, suffix=None):
     Returns:
         str: Path to the temporary file
     """
-    # Create temporary file
-    fd, path = tempfile.mkstemp(suffix=suffix)
+    fd, temp_path = tempfile.mkstemp(suffix=suffix)
     
     try:
-        # Write content to file
-        with os.fdopen(fd, 'wb') as f:
-            f.write(content)
-        
-        return path
-    
-    except Exception:
-        os.unlink(path)
+        with os.fdopen(fd, 'wb') as temp_file:
+            temp_file.write(content)
+    except:
+        os.close(fd)
         raise
+    
+    return temp_path
