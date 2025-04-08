@@ -6,6 +6,7 @@ from flask import render_template, request, redirect, url_for, flash, send_file,
 from datetime import datetime
 import os
 import json
+import random
 from werkzeug.utils import secure_filename
 import io
 
@@ -310,7 +311,7 @@ def register_routes(app):
     
     @app.route('/document/upload/<int:borrower_id>', methods=['GET', 'POST'])
     def upload_document_route(borrower_id):
-        """Upload a document for a borrower"""
+        """Upload multiple documents for a borrower"""
         borrower = Borrower.query.get(borrower_id)
         
         if not borrower:
@@ -318,42 +319,63 @@ def register_routes(app):
             return redirect(url_for('index'))
         
         if request.method == 'POST':
-            # Check if the post request has the file part
-            if 'document' not in request.files:
-                flash('No file selected', 'danger')
+            # Check if the post request has any files
+            uploaded_files = request.files.getlist('documents[]')
+            
+            if not uploaded_files or len(uploaded_files) == 0:
+                flash('No files selected', 'danger')
                 return redirect(request.url)
             
-            file = request.files['document']
+            # Check if any file has a filename
+            valid_files = [f for f in uploaded_files if f.filename != '']
             
-            # If user does not select file, browser also
-            # submit an empty part without filename
-            if file.filename == '':
-                flash('No file selected', 'danger')
+            if len(valid_files) == 0:
+                flash('No valid files selected', 'danger')
                 return redirect(request.url)
             
-            if file:
-                # Generate a unique filename to prevent overwriting
-                original_filename = secure_filename(file.filename)
-                filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{original_filename}"
-                description = request.form.get('description', '')
-                
-                # Save file to documents directory
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                
-                # Create document record in database
-                document = Document(
-                    borrower_id=borrower_id,
-                    filename=filename,
-                    original_filename=original_filename,
-                    description=description
-                )
-                
-                db.session.add(document)
+            # Process each valid file
+            description = request.form.get('description', '')
+            upload_count = 0
+            
+            for file in valid_files:
+                try:
+                    # Generate a unique filename to prevent overwriting
+                    original_filename = secure_filename(file.filename)
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    random_suffix = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=6))
+                    filename = f"{timestamp}_{random_suffix}_{original_filename}"
+                    
+                    # Save file to documents directory
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
+                    
+                    # Create document record in database
+                    document = Document(
+                        borrower_id=borrower_id,
+                        filename=filename,
+                        original_filename=original_filename,
+                        description=description
+                    )
+                    
+                    db.session.add(document)
+                    upload_count += 1
+                except Exception as e:
+                    app.logger.error(f"Error uploading file {file.filename}: {str(e)}")
+            
+            # Commit all documents
+            if upload_count > 0:
                 db.session.commit()
                 
-                flash('Document uploaded successfully', 'success')
+                # Show appropriate success message
+                if upload_count == 1:
+                    flash('1 document uploaded successfully', 'success')
+                else:
+                    flash(f'{upload_count} documents uploaded successfully', 'success')
+                
                 return redirect(url_for('documents', borrower_id=borrower_id))
+            else:
+                flash('Failed to upload any documents', 'danger')
+                return redirect(request.url)
         
         return render_template('upload_document.html', borrower=borrower.to_dict())
     
