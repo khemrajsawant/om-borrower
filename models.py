@@ -13,20 +13,20 @@ class Borrower(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     serial_no = db.Column(db.String(20), nullable=False)
-    date = db.Column(db.String(10), nullable=False)
-    reference = db.Column(db.String(100))
+    date = db.Column(db.String(30), nullable=False)  # Increased from 10 to 30
+    reference = db.Column(db.String(255))  # Increased from 100 to 255
     borrower_name = db.Column(db.String(255), nullable=False)
     co_borrower_name = db.Column(db.String(255))
     address_line1 = db.Column(db.String(255))
     address_line2 = db.Column(db.String(255))
-    village_city = db.Column(db.String(100))
-    taluka = db.Column(db.String(100))
-    district = db.Column(db.String(100))
-    pin_code = db.Column(db.String(10))
-    mobile = db.Column(db.String(15))
-    bank_name = db.Column(db.String(100))
-    loan_amount = db.Column(db.String(20))
-    letter_status = db.Column(db.String(20), default='Not Send')
+    village_city = db.Column(db.String(255))  # Increased from 100 to 255
+    taluka = db.Column(db.String(255))  # Increased from 100 to 255
+    district = db.Column(db.String(255))  # Increased from 100 to 255
+    pin_code = db.Column(db.String(20))  # Increased from 10 to 20
+    mobile = db.Column(db.String(20))  # Increased from 15 to 20
+    bank_name = db.Column(db.String(255))  # Increased from 100 to 255
+    loan_amount = db.Column(db.String(30))  # Increased from 20 to 30
+    letter_status = db.Column(db.String(30), default='Not Send')  # Increased from 20 to 30
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
