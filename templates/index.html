@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 
 {% block head %}
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
 <style>
     .devanagari {
         font-family: 'Noto Sans Devanagari', sans-serif;
@@ -21,104 +24,198 @@
         color: #6c757d;
         font-size: 0.9rem;
     }
+    .stat-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .recent-activity-item {
+        border-left: 3px solid #e3e6f0;
+        padding-left: 15px;
+        position: relative;
+        margin-bottom: 15px;
+    }
+    .activity-date {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 0.75rem;
+        color: #858796;
+    }
+    .table-hover tr:hover {
+        background-color: rgba(78, 115, 223, 0.05) !important;
+    }
+    .chart-container {
+        position: relative;
+        height: 250px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col">
-        <h1 class="h2 mb-0">Borrower Management System</h1>
-        <p class="text-muted">Maharashtra Lokadhikar Samiti</p>
-    </div>
-    <div class="col-auto">
-        <a href="{{ url_for('add_borrower_route') }}" class="btn btn-success">
-            <i class="fas fa-plus-circle me-1"></i> Add Borrower
-        </a>
-        <a href="{{ url_for('search_page') }}" class="btn btn-primary">
-            <i class="fas fa-search me-1"></i> Search
-        </a>
-        <div class="btn-group">
-            <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-file-export me-1"></i> Export/Import
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item" href="{{ url_for('export_all') }}">
-                        <i class="fas fa-file-excel me-1"></i> Export All to Excel
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ url_for('import_route') }}">
-                        <i class="fas fa-file-import me-1"></i> Import from Excel
-                    </a>
-                </li>
-            </ul>
+<!-- Page Header -->
+<div class="page-breadcrumb mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+            <p class="text-muted mb-0">Welcome to the Borrower Management System</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('add_borrower_route') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle me-1"></i> Add Borrower
+            </a>
+            <a href="{{ url_for('search_page') }}" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i> Search
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-export me-1"></i> Data
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('export_all') }}">
+                            <i class="fas fa-file-excel me-2"></i> Export All to Excel
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('import_route') }}">
+                            <i class="fas fa-file-import me-2"></i> Import from Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Stats Cards -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card bg-primary text-white shadow-sm h-100">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-primary h-100 border-0 shadow-sm">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title mb-0">Total Borrowers</h6>
-                        <h2 class="mt-2 mb-0">{{ stats.total_borrowers }}</h2>
+                        <h5 class="text-uppercase">Total Borrowers</h5>
+                        <div class="stat-value">{{ stats.total_borrowers }}</div>
+                        <div class="mt-2 text-muted small">
+                            <span class="text-success me-2"><i class="fas fa-angle-up"></i> {{ stats.growth_rate }}%</span>
+                            <span>Since last month</span>
+                        </div>
                     </div>
-                    <div>
-                        <i class="fas fa-users fa-3x opacity-50"></i>
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-users"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 mb-3">
-        <div class="card bg-success text-white shadow-sm h-100">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-success h-100 border-0 shadow-sm">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title mb-0">Letters Sent</h6>
-                        <h2 class="mt-2 mb-0">{{ stats.letters_sent }}</h2>
+                        <h5 class="text-uppercase">Letters Sent</h5>
+                        <div class="stat-value">{{ stats.letters_sent }}</div>
+                        <div class="mt-2 text-muted small">
+                            <span class="text-success me-2"><i class="fas fa-check-circle"></i></span>
+                            <span>{{ stats.letters_sent_percentage }}% of total borrowers</span>
+                        </div>
                     </div>
-                    <div>
-                        <i class="fas fa-envelope-open-text fa-3x opacity-50"></i>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-envelope-open-text"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 mb-3">
-        <div class="card bg-danger text-white shadow-sm h-100">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-warning h-100 border-0 shadow-sm">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title mb-0">Letters Returned</h6>
-                        <h2 class="mt-2 mb-0">{{ stats.letters_returned }}</h2>
+                        <h5 class="text-uppercase">Letters Returned</h5>
+                        <div class="stat-value">{{ stats.letters_returned }}</div>
+                        <div class="mt-2 text-muted small">
+                            <span class="text-danger me-2"><i class="fas fa-exclamation-circle"></i></span>
+                            <span>{{ stats.letters_returned_percentage }}% of sent letters</span>
+                        </div>
                     </div>
-                    <div>
-                        <i class="fas fa-envelope-open fa-3x opacity-50"></i>
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-envelope-open"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 mb-3">
-        <div class="card bg-info text-white shadow-sm h-100">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-info h-100 border-0 shadow-sm">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title mb-0">Documents</h6>
-                        <h2 class="mt-2 mb-0">{{ stats.total_documents }}</h2>
+                        <h5 class="text-uppercase">Documents</h5>
+                        <div class="stat-value">{{ stats.total_documents }}</div>
+                        <div class="mt-2 text-muted small">
+                            <span class="text-info me-2"><i class="fas fa-file-alt"></i></span>
+                            <span>{{ stats.docs_per_borrower }} avg per borrower</span>
+                        </div>
                     </div>
-                    <div>
-                        <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-file-alt"></i>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Chart - Letter Status Distribution -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Borrower Statistics</h6>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="chartDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="chartDropdown">
+                        <li><a class="dropdown-item" href="#" id="view-letter-status">View Letter Status</a></li>
+                        <li><a class="dropdown-item" href="#" id="view-district-dist">View District Distribution</a></li>
+                        <li><a class="dropdown-item" href="#" id="view-bank-dist">View Bank Distribution</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                    {% for activity in recent_activity %}
+                    <div class="recent-activity-item">
+                        <div class="activity-date">{{ activity.date }}</div>
+                        <h6 class="font-weight-bold">{{ activity.title }}</h6>
+                        <p class="mb-0">{{ activity.description }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center my-4 text-muted">No recent activity found.</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -126,8 +223,8 @@
 
 <!-- Bulk Update Section -->
 <div class="card shadow-sm mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0">Bulk Update Letter Status</h5>
+    <div class="card-header bg-light py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Bulk Update Letter Status</h6>
     </div>
     <div class="card-body">
         <form method="POST" action="{{ url_for('index') }}">
@@ -158,63 +255,214 @@
     </div>
 </div>
 
-<!-- List of Borrowers -->
+<!-- Recent Borrowers -->
 <div class="card shadow-sm">
-    <div class="card-header bg-light">
+    <div class="card-header bg-light py-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Borrowers List</h5>
-            <span class="counter">Showing all {{ stats.total_borrowers }} entries</span>
+            <h6 class="m-0 font-weight-bold text-primary">Recent Borrowers</h6>
+            <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#borrowersTable" aria-expanded="true">
+                <i class="fas fa-chevron-down"></i>
+            </a>
         </div>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Sr. No</th>
-                        <th>Borrower Name</th>
-                        <th>Village/City</th>
-                        <th>District</th>
-                        <th>Bank</th>
-                        <th>Loan Amount</th>
-                        <th>Letter Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for borrower in borrowers %}
-                    <tr>
-                        <td>{{ borrower.serial_no }}</td>
-                        <td class="devanagari">{{ borrower.borrower_name }}</td>
-                        <td class="devanagari">{{ borrower.village_city }}</td>
-                        <td class="devanagari">{{ borrower.district }}</td>
-                        <td class="devanagari">{{ borrower.bank_name }}</td>
-                        <td>{{ borrower.loan_amount }}</td>
-                        <td class="letter-status">
-                            {% if borrower.letter_status == 'Not Send' %}
-                            <span class="badge bg-secondary">Not Sent</span>
-                            {% elif borrower.letter_status == 'Send' %}
-                            <span class="badge bg-success">Sent</span>
-                            {% elif borrower.letter_status == 'Returned Back' %}
-                            <span class="badge bg-danger">Returned</span>
-                            {% endif %}
-                        </td>
-                        <td class="action-buttons">
-                            <a href="{{ url_for('view_borrower', id=borrower.id) }}" class="btn btn-sm btn-info" title="View">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ url_for('edit_borrower_route', id=borrower.id) }}" class="btn btn-sm btn-warning" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{{ url_for('documents', borrower_id=borrower.id) }}" class="btn btn-sm btn-primary" title="Documents">
-                                <i class="fas fa-file-alt"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="collapse show" id="borrowersTable">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Sr. No</th>
+                            <th>Borrower Name</th>
+                            <th>Village/City</th>
+                            <th>District</th>
+                            <th>Bank</th>
+                            <th>Loan Amount</th>
+                            <th>Letter Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for borrower in borrowers[:10] %}
+                        <tr>
+                            <td>{{ borrower.serial_no }}</td>
+                            <td class="devanagari">{{ borrower.borrower_name }}</td>
+                            <td class="devanagari">{{ borrower.village_city }}</td>
+                            <td class="devanagari">{{ borrower.district }}</td>
+                            <td class="devanagari">{{ borrower.bank_name }}</td>
+                            <td>{{ borrower.loan_amount }}</td>
+                            <td class="letter-status">
+                                {% if borrower.letter_status == 'Not Send' %}
+                                <span class="badge bg-secondary">Not Sent</span>
+                                {% elif borrower.letter_status == 'Send' %}
+                                <span class="badge bg-success">Sent</span>
+                                {% elif borrower.letter_status == 'Returned Back' %}
+                                <span class="badge bg-danger">Returned</span>
+                                {% endif %}
+                            </td>
+                            <td class="action-buttons">
+                                <a href="{{ url_for('view_borrower', id=borrower.id) }}" class="btn btn-sm btn-info" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_borrower_route', id=borrower.id) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('documents', borrower_id=borrower.id) }}" class="btn btn-sm btn-primary" title="Documents">
+                                    <i class="fas fa-file-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('index') }}" class="btn btn-sm btn-primary">View All Borrowers</a>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data for charts
+        const letterStatusLabels = ['Not Sent', 'Sent', 'Returned'];
+        const letterStatusData = [
+            {{ stats.letters_not_sent }}, 
+            {{ stats.letters_sent }}, 
+            {{ stats.letters_returned }}
+        ];
+        const letterStatusColors = ['#858796', '#1cc88a', '#e74a3b'];
+        
+        // Default chart configuration
+        let chartConfig = {
+            type: 'doughnut',
+            data: {
+                labels: letterStatusLabels,
+                datasets: [{
+                    data: letterStatusData,
+                    backgroundColor: letterStatusColors,
+                    hoverBackgroundColor: letterStatusColors,
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Letter Status Distribution',
+                        font: {
+                            size: 16
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        };
+        
+        // Initialize main chart
+        const mainChartCtx = document.getElementById('mainChart');
+        let mainChart = new Chart(mainChartCtx, chartConfig);
+        
+        // Chart type switchers
+        document.getElementById('view-letter-status').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            mainChart.destroy();
+            chartConfig.type = 'doughnut';
+            chartConfig.data.labels = letterStatusLabels;
+            chartConfig.data.datasets[0].data = letterStatusData;
+            chartConfig.data.datasets[0].backgroundColor = letterStatusColors;
+            chartConfig.options.plugins.title.text = 'Letter Status Distribution';
+            
+            mainChart = new Chart(mainChartCtx, chartConfig);
+        });
+        
+        document.getElementById('view-district-dist').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // This would come from server but using placeholders
+            const districtData = {
+                labels: {{ stats.top_districts|safe }},
+                data: {{ stats.top_districts_counts|safe }}
+            };
+            
+            mainChart.destroy();
+            chartConfig.type = 'bar';
+            chartConfig.data.labels = districtData.labels;
+            chartConfig.data.datasets = [{
+                label: 'Number of Borrowers',
+                data: districtData.data,
+                backgroundColor: '#4e73df',
+                barPercentage: 0.6
+            }];
+            chartConfig.options.plugins.title.text = 'Borrowers by District';
+            chartConfig.options.scales = {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            };
+            
+            mainChart = new Chart(mainChartCtx, chartConfig);
+        });
+        
+        document.getElementById('view-bank-dist').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // This would come from server but using placeholders  
+            const bankData = {
+                labels: {{ stats.top_banks|safe }},
+                data: {{ stats.top_banks_counts|safe }}
+            };
+            
+            mainChart.destroy();
+            chartConfig.type = 'bar';
+            chartConfig.data.labels = bankData.labels;
+            chartConfig.data.datasets = [{
+                label: 'Number of Borrowers',
+                data: bankData.data,
+                backgroundColor: '#36b9cc',
+                barPercentage: 0.6
+            }];
+            chartConfig.options.plugins.title.text = 'Borrowers by Bank';
+            chartConfig.options.scales = {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            };
+            
+            mainChart = new Chart(mainChartCtx, chartConfig);
+        });
+    });
+</script>
 {% endblock %}

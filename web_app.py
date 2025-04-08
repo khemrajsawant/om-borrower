@@ -44,7 +44,7 @@ def register_routes(app):
     # Routes
     @app.route('/', methods=['GET', 'POST'])
     def index():
-        """Home page with borrower list"""
+        """Home page with borrower list and dashboard"""
         # Get all borrowers in descending order by serial_no
         # Note: Use desc() function for descending order and 
         # cast serial_no to integer for proper numeric sorting
@@ -70,17 +70,91 @@ def register_routes(app):
                 flash(f'Updated letter status to "{letter_status}" for {updated_count} borrowers', 'success')
                 return redirect(url_for('index'))
         
-        # Get statistics
+        # Calculate enhanced statistics for dashboard
+        total_borrowers = len(borrowers)
+        letters_sent = len([b for b in borrowers if b.letter_status == 'Send'])
+        letters_not_sent = len([b for b in borrowers if b.letter_status == 'Not Send'])
+        letters_returned = len([b for b in borrowers if b.letter_status == 'Returned Back'])
+        total_documents = Document.query.count()
+        
+        # Calculate percentage stats (avoid division by zero)
+        letters_sent_percentage = round((letters_sent / total_borrowers) * 100) if total_borrowers > 0 else 0
+        letters_returned_percentage = round((letters_returned / letters_sent) * 100) if letters_sent > 0 else 0
+        docs_per_borrower = round(total_documents / total_borrowers, 1) if total_borrowers > 0 else 0
+        
+        # Get borrowers from last 30 days for growth rate calculation
+        thirty_days_ago = datetime.now().date().replace(day=1)  # First day of current month as approximation
+        last_month_borrowers = Borrower.query.filter(Borrower.created_at < thirty_days_ago).count()
+        growth_rate = round(((total_borrowers - last_month_borrowers) / max(last_month_borrowers, 1)) * 100)
+        
+        # Get top districts and banks for charts
+        districts = {}
+        banks = {}
+        
+        for b in borrowers:
+            if b.district:
+                districts[b.district] = districts.get(b.district, 0) + 1
+            if b.bank_name:
+                banks[b.bank_name] = banks.get(b.bank_name, 0) + 1
+        
+        # Sort and get top 5 districts and banks
+        top_districts = sorted(districts.items(), key=lambda x: x[1], reverse=True)[:5]
+        top_banks = sorted(banks.items(), key=lambda x: x[1], reverse=True)[:5]
+        
+        # Prepare data for charts
+        district_labels = [d[0] for d in top_districts]
+        district_counts = [d[1] for d in top_districts]
+        
+        bank_labels = [b[0] for b in top_banks]
+        bank_counts = [b[1] for b in top_banks]
+        
+        # Get recent activity (last 5 changes)
+        recent_borrowers = Borrower.query.order_by(Borrower.updated_at.desc()).limit(5).all()
+        recent_documents = Document.query.order_by(Document.uploaded_at.desc()).limit(5).all()
+        
+        # Combine and sort by date
+        recent_activity = []
+        
+        for b in recent_borrowers:
+            recent_activity.append({
+                'date': b.updated_at.strftime('%d/%m/%Y'),
+                'title': f'Borrower Updated',
+                'description': f'{b.borrower_name} - {b.village_city}'
+            })
+            
+        for d in recent_documents:
+            borrower = Borrower.query.get(d.borrower_id)
+            borrower_name = borrower.borrower_name if borrower else "Unknown"
+            recent_activity.append({
+                'date': d.uploaded_at.strftime('%d/%m/%Y'),
+                'title': f'Document Uploaded',
+                'description': f'{borrower_name} - {d.description or d.original_filename}'
+            })
+            
+        # Sort by date (most recent first) and limit to 5
+        recent_activity = sorted(recent_activity, key=lambda x: datetime.strptime(x['date'], '%d/%m/%Y'), reverse=True)[:5]
+        
+        # Comprehensive stats dictionary
         stats = {
-            'total_borrowers': len(borrowers),
-            'letters_sent': len([b for b in borrowers if b.letter_status == 'Send']),
-            'letters_returned': len([b for b in borrowers if b.letter_status == 'Returned Back']),
-            'total_documents': Document.query.count()
+            'total_borrowers': total_borrowers,
+            'letters_sent': letters_sent,
+            'letters_not_sent': letters_not_sent,
+            'letters_returned': letters_returned,
+            'total_documents': total_documents,
+            'letters_sent_percentage': letters_sent_percentage,
+            'letters_returned_percentage': letters_returned_percentage,
+            'docs_per_borrower': docs_per_borrower,
+            'growth_rate': growth_rate,
+            'top_districts': json.dumps(district_labels),
+            'top_districts_counts': json.dumps(district_counts),
+            'top_banks': json.dumps(bank_labels),
+            'top_banks_counts': json.dumps(bank_counts)
         }
         
         return render_template('index.html', 
                               borrowers=borrowers_list,
-                              stats=stats)
+                              stats=stats,
+                              recent_activity=recent_activity)
     
     @app.route('/borrower/add', methods=['GET', 'POST'])
     def add_borrower_route():

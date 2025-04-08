@@ -16,30 +16,37 @@
     
     <style>
         :root {
-            --primary-color: #3498db;
+            --primary-color: #4e73df;
             --secondary-color: #2c3e50;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --info-color: #1abc9c;
+            --success-color: #1cc88a;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --info-color: #36b9cc;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
         }
         
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fc;
+            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .devanagari {
+            font-family: 'Noto Sans Devanagari', sans-serif;
         }
         
         .sidebar {
-            background-color: var(--secondary-color);
+            background: linear-gradient(180deg, var(--primary-color) 0%, #224abe 100%);
             color: white;
             min-height: 100vh;
             position: fixed;
             left: 0;
             top: 0;
             width: 250px;
-            padding-top: 60px;
+            padding-top: 0;
             z-index: 100;
-            transition: margin-left 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
         }
         
         .sidebar-collapsed {
@@ -58,19 +65,28 @@
         
         .top-navbar {
             background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            height: 60px;
+            height: 70px;
             padding-left: 270px;
             transition: padding-left 0.3s;
         }
         
         .top-navbar.full-width {
             padding-left: 20px;
+        }
+        
+        .sidebar-brand {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            margin-bottom: 15px;
+            background-color: rgba(0, 0, 0, 0.1);
         }
         
         .menu-toggle {
@@ -81,23 +97,26 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: rgba(0,0,0,0.05);
+            background-color: var(--light-color);
             transition: background-color 0.3s;
+            color: var(--primary-color);
         }
         
         .menu-toggle:hover {
-            background-color: rgba(0,0,0,0.1);
+            background-color: rgba(78, 115, 223, 0.1);
         }
         
         .nav-item {
             margin-bottom: 5px;
+            padding: 0 16px;
         }
         
         .nav-link {
             color: rgba(255,255,255,0.8) !important;
             border-radius: 5px;
-            padding: 10px 15px;
+            padding: 12px 16px;
             transition: all 0.3s;
+            font-weight: 500;
         }
         
         .nav-link:hover, .nav-link.active {
@@ -111,15 +130,33 @@
             text-align: center;
         }
         
+        .sidebar-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 1rem 0;
+        }
+        
+        .sidebar-heading {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            padding: 10px 16px;
+        }
+        
         .card {
             border: none;
-            border-radius: 10px;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             overflow: hidden;
+            margin-bottom: 24px;
         }
         
         .card-header {
             padding: 15px 20px;
-            font-weight: 600;
+            font-weight: 700;
+            border-bottom: 1px solid #e3e6f0;
+            background: white;
         }
         
         .card-body {
@@ -127,21 +164,33 @@
         }
         
         .btn {
-            border-radius: 5px;
-            padding: 8px 15px;
+            border-radius: 0.35rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2e59d9;
         }
         
         .shadow-sm {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+            box-shadow: 0 0.125rem 0.25rem 0 rgba(58, 59, 69, 0.2) !important;
         }
         
         .breadcrumb-item + .breadcrumb-item::before {
-            content: ">";
+            content: "›";
+            font-weight: 700;
         }
         
         .flash-messages {
             position: fixed;
-            top: 70px;
+            top: 80px;
             right: 20px;
             z-index: 2000;
             max-width: 350px;
@@ -150,8 +199,8 @@
         .flash-message {
             margin-bottom: 10px;
             padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             animation: slideIn 0.3s ease-out forwards;
         }
         
@@ -168,16 +217,99 @@
         
         footer {
             background-color: white;
-            border-top: 1px solid #dee2e6;
+            border-top: 1px solid #e3e6f0;
             padding: 15px 0;
             text-align: center;
             margin-top: 30px;
         }
         
         .content-wrapper {
-            padding-top: 80px;
+            padding-top: 90px;
             padding-bottom: 30px;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Dashboard cards */
+        .stat-card {
+            border-left: 4px solid;
+            border-radius: 0.35rem;
+        }
+        
+        .stat-card-primary {
+            border-left-color: var(--primary-color);
+        }
+        
+        .stat-card-success {
+            border-left-color: var(--success-color);
+        }
+        
+        .stat-card-info {
+            border-left-color: var(--info-color);
+        }
+        
+        .stat-card-warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+        
+        .stat-card h5 {
+            color: var(--dark-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-card .stat-value {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        
+        /* Table styling */
+        .table thead th {
+            background-color: var(--light-color);
+            border-bottom: 2px solid #e3e6f0;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03rem;
+            vertical-align: middle;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        /* Custom form styling */
+        .form-control {
+            border-radius: 0.35rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d3e2;
+        }
+        
+        .form-control:focus {
+            border-color: #bac8f3;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+        
+        /* Breadcrumb */
+        .page-breadcrumb {
+            background-color: white;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
         }
         
         /* Mobile Responsive */
@@ -231,39 +363,65 @@
     
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <div class="px-3 mb-4">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="img-fluid" onerror="this.style.display='none'">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center">
+            <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" style="height: 40px;" class="me-2">
+            <div class="sidebar-brand-text">
+                <span class="d-block">Lokadhikar</span>
+                <small class="d-block" style="font-size: 0.7rem; opacity: 0.8;">Borrower Management</small>
+            </div>
         </div>
         
-        <ul class="nav flex-column px-3">
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+        
+        <!-- Nav Item - Dashboard -->
+        <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link {{ 'active' if request.path == url_for('index') }}" href="{{ url_for('index') }}">
-                    <i class="fas fa-home"></i> Dashboard
+                    <i class="fas fa-fw fa-tachometer-alt"></i> Dashboard
                 </a>
             </li>
+            
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+            
+            <!-- Heading -->
+            <div class="sidebar-heading">Borrower Management</div>
+            
             <li class="nav-item">
                 <a class="nav-link {{ 'active' if request.path == url_for('add_borrower_route') }}" href="{{ url_for('add_borrower_route') }}">
-                    <i class="fas fa-user-plus"></i> Add Borrower
+                    <i class="fas fa-fw fa-user-plus"></i> Add Borrower
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ 'active' if request.path == url_for('search_page') }}" href="{{ url_for('search_page') }}">
-                    <i class="fas fa-search"></i> Search Borrowers
+                    <i class="fas fa-fw fa-search"></i> Search Borrowers
                 </a>
             </li>
+            
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+            
+            <!-- Heading -->
+            <div class="sidebar-heading">Data Management</div>
+            
             <li class="nav-item">
                 <a class="nav-link {{ 'active' if request.path == url_for('import_route') }}" href="{{ url_for('import_route') }}">
-                    <i class="fas fa-file-import"></i> Import Data
+                    <i class="fas fa-fw fa-file-import"></i> Import Data
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ 'active' if request.path == url_for('export_all') }}" href="{{ url_for('export_all') }}">
-                    <i class="fas fa-file-export"></i> Export Data
+                    <i class="fas fa-fw fa-file-export"></i> Export Data
                 </a>
             </li>
-            <li class="nav-item mt-4">
+            
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+            
+            <li class="nav-item">
                 <a class="nav-link" href="#" id="about-link">
-                    <i class="fas fa-info-circle"></i> About
+                    <i class="fas fa-fw fa-info-circle"></i> About
                 </a>
             </li>
         </ul>
@@ -317,20 +475,20 @@
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-4">
-                        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Maharashtra Lokadhikar Samiti" class="img-fluid" style="max-height: 100px;" onerror="this.style.display='none'">
+                        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Maharashtra Lokadhikar Samiti" class="img-fluid" style="max-height: 100px;">
                         <h4 class="mt-3">Borrower Management System</h4>
                         <p class="text-muted">Version 1.0</p>
                     </div>
                     
                     <p>This system was developed for Maharashtra Lokadhikar Samiti to manage borrower information, debt correspondence, and loan documents.</p>
                     
-                    <h6>Features:</h6>
-                    <ul>
-                        <li>Maintain comprehensive borrower information</li>
-                        <li>Track correspondence with Marathi language support</li>
-                        <li>Manage loan-related documents</li>
-                        <li>Advanced search functionality</li>
-                        <li>Import/Export data with Excel</li>
+                    <h6 class="fw-bold">Features:</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> Maintain comprehensive borrower information</li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> Track correspondence with Marathi language support</li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> Manage multiple loan-related documents</li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> Advanced search functionality</li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i> Import/Export data with Excel</li>
                     </ul>
                 </div>
                 <div class="modal-footer">
