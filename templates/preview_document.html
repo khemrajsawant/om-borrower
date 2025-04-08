@@ -150,8 +150,9 @@
 
 {% block scripts %}
 <script>
-    $(document).ready(function() {
-        // Add any specific JavaScript for the preview page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Any specific JavaScript for the preview page can go here
+        console.log('Document preview page loaded successfully');
     });
 </script>
 {% endblock %}

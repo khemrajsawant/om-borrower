@@ -298,6 +298,43 @@
             box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
         }
         
+        /* Progress bar styling */
+        .btn-progress {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-progress:disabled {
+            cursor: not-allowed;
+        }
+        
+        .btn-progress .spinner {
+            display: none;
+            margin-right: 5px;
+        }
+        
+        .btn-progress.loading .spinner {
+            display: inline-block;
+        }
+        
+        .progress-bar-container {
+            height: 4px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
         .form-label {
             font-weight: 500;
             color: var(--dark-color);
@@ -335,6 +372,11 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    <!-- Progress Bar -->
+    <div class="progress-bar-container">
+        <div class="progress-bar"></div>
+    </div>
+    
     <!-- Top Navbar -->
     <nav class="navbar top-navbar" id="topNavbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
@@ -498,7 +540,8 @@
         </div>
     </div>
     
-    <!-- Bootstrap JS with Popper -->
+    <!-- jQuery and Bootstrap JS with Popper -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
@@ -548,6 +591,83 @@
                 e.preventDefault();
                 const aboutModal = new bootstrap.Modal(document.getElementById('aboutModal'));
                 aboutModal.show();
+            });
+            
+            // Progress bars for all buttons and form submissions
+            function showProgressBar() {
+                const progressBarContainer = document.querySelector('.progress-bar-container');
+                const progressBar = document.querySelector('.progress-bar');
+                
+                progressBarContainer.style.display = 'block';
+                let width = 0;
+                const interval = setInterval(function() {
+                    if (width >= 90) {
+                        clearInterval(interval);
+                    } else {
+                        width += Math.random() * 10;
+                        progressBar.style.width = width + '%';
+                    }
+                }, 200);
+                
+                return {
+                    complete: function() {
+                        progressBar.style.width = '100%';
+                        setTimeout(function() {
+                            progressBarContainer.style.display = 'none';
+                            progressBar.style.width = '0';
+                        }, 500);
+                    }
+                };
+            }
+            
+            // Add progress indicator to all buttons with form submission
+            const buttons = document.querySelectorAll('button[type="submit"], input[type="submit"]');
+            buttons.forEach(function(button) {
+                button.classList.add('btn-progress');
+                
+                // Add spinner element to button
+                const spinner = document.createElement('span');
+                spinner.classList.add('spinner');
+                spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.prepend(spinner);
+                
+                // Find the parent form
+                const form = button.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        const progress = showProgressBar();
+                        button.classList.add('loading');
+                        button.disabled = true;
+                        
+                        // For cases where the form might get stuck
+                        setTimeout(function() {
+                            progress.complete();
+                            button.classList.remove('loading');
+                            button.disabled = false;
+                        }, 30000); // 30 second timeout as fallback
+                    });
+                }
+            });
+            
+            // Add progress indicators to action links (delete, edit, etc)
+            const actionLinks = document.querySelectorAll('a.btn:not([href="#"])');
+            actionLinks.forEach(function(link) {
+                if (!link.getAttribute('href').startsWith('#') && !link.classList.contains('dropdown-toggle')) {
+                    link.addEventListener('click', function(e) {
+                        // Don't add progress for links with specific classes
+                        if (link.classList.contains('no-progress') || 
+                            link.getAttribute('target') === '_blank' ||
+                            link.getAttribute('download') !== null) {
+                            return true;
+                        }
+                        
+                        showProgressBar();
+                        link.classList.add('disabled');
+                        setTimeout(function() {
+                            link.classList.remove('disabled');
+                        }, 30000); // 30 second timeout as fallback
+                    });
+                }
             });
         });
     </script>
