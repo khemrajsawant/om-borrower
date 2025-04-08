@@ -44,8 +44,10 @@ def register_routes(app):
     @app.route('/', methods=['GET', 'POST'])
     def index():
         """Home page with borrower list"""
-        # Get all borrowers
-        borrowers = Borrower.query.all()
+        # Get all borrowers in descending order by serial_no
+        # Note: Use desc() function for descending order and 
+        # cast serial_no to integer for proper numeric sorting
+        borrowers = Borrower.query.order_by(db.desc(db.cast(Borrower.serial_no, db.Integer))).all()
         borrowers_list = [b.to_dict() for b in borrowers]
         
         # Handle bulk update of letter status
@@ -254,8 +256,8 @@ def register_routes(app):
             if request.form.get('co_borrower_name'):
                 query = query.filter(Borrower.co_borrower_name.like(f"%{request.form.get('co_borrower_name')}%"))
             
-            # Execute query and convert to dictionary
-            results = [b.to_dict() for b in query.all()]
+            # Order by serial_no in descending order and convert to dictionary
+            results = [b.to_dict() for b in query.order_by(db.desc(db.cast(Borrower.serial_no, db.Integer))).all()]
         else:
             # Advanced search (text-based)
             search_text = request.form.get('search_text')
@@ -274,8 +276,8 @@ def register_routes(app):
                     )
                 )
                 
-                # Execute query and convert to dictionary
-                results = [b.to_dict() for b in query.all()]
+                # Order by serial_no in descending order and convert to dictionary
+                results = [b.to_dict() for b in query.order_by(db.desc(db.cast(Borrower.serial_no, db.Integer))).all()]
         
         # Get field options for dropdowns
         options = {
@@ -402,7 +404,7 @@ def register_routes(app):
     @app.route('/export/all')
     def export_all():
         """Export all borrowers to Excel"""
-        borrowers = [b.to_dict() for b in Borrower.query.all()]
+        borrowers = [b.to_dict() for b in Borrower.query.order_by(db.desc(db.cast(Borrower.serial_no, db.Integer))).all()]
         
         if not borrowers:
             flash('No borrowers to export', 'warning')
