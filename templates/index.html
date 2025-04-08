@@ -135,8 +135,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center bg-transparent small">
-                    <i class="fas fa-filter me-1"></i> Click to view all borrowers
+                <div class="card-footer text-center bg-transparent small d-flex justify-content-between">
+                    <span><i class="fas fa-filter me-1"></i> View all borrowers</span>
+                    <a href="#" class="export-link" data-filter="all"><i class="fas fa-file-excel me-1"></i>Export</a>
                 </div>
             </div>
         </a>
@@ -160,8 +161,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center bg-transparent small">
-                    <i class="fas fa-filter me-1"></i> Click to view sent letters
+                <div class="card-footer text-center bg-transparent small d-flex justify-content-between">
+                    <span><i class="fas fa-filter me-1"></i> View sent letters</span>
+                    <a href="#" class="export-link" data-filter="sent"><i class="fas fa-file-excel me-1"></i>Export</a>
                 </div>
             </div>
         </a>
@@ -185,8 +187,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center bg-transparent small">
-                    <i class="fas fa-filter me-1"></i> Click to view returned letters
+                <div class="card-footer text-center bg-transparent small d-flex justify-content-between">
+                    <span><i class="fas fa-filter me-1"></i> View returned letters</span>
+                    <a href="#" class="export-link" data-filter="returned"><i class="fas fa-file-excel me-1"></i>Export</a>
                 </div>
             </div>
         </a>
@@ -210,8 +213,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center bg-transparent small">
-                    <i class="fas fa-filter me-1"></i> Click to view not sent letters
+                <div class="card-footer text-center bg-transparent small d-flex justify-content-between">
+                    <span><i class="fas fa-filter me-1"></i> View not sent letters</span>
+                    <a href="#" class="export-link" data-filter="not-sent"><i class="fas fa-file-excel me-1"></i>Export</a>
                 </div>
             </div>
         </a>
@@ -639,6 +643,35 @@
         document.getElementById('filter-letters-not-sent').addEventListener('click', function(e) {
             e.preventDefault();
             filterBorrowers('not-sent');
+        });
+        
+        // Handle export links on stat cards
+        document.querySelectorAll('.export-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent triggering the parent card click
+                
+                const filterType = this.getAttribute('data-filter');
+                let filteredBorrowers = [];
+                let exportTitle = 'All Borrowers';
+                
+                // Apply filtering based on the link clicked
+                if (filterType === 'all') {
+                    filteredBorrowers = allBorrowers;
+                    exportTitle = 'All Borrowers';
+                } else if (filterType === 'sent') {
+                    filteredBorrowers = allBorrowers.filter(b => b.letter_status === 'Send');
+                    exportTitle = 'Letters Sent';
+                } else if (filterType === 'returned') {
+                    filteredBorrowers = allBorrowers.filter(b => b.letter_status === 'Returned Back');
+                    exportTitle = 'Letters Returned';
+                } else if (filterType === 'not-sent') {
+                    filteredBorrowers = allBorrowers.filter(b => b.letter_status === 'Not Send');
+                    exportTitle = 'Letters Not Sent';
+                }
+                
+                exportToExcel(filteredBorrowers, exportTitle);
+            });
         });
         
         // Add hover effect to stat cards

@@ -180,6 +180,24 @@ input::-webkit-calendar-picker-indicator {
     margin: 0;
 }
 
+/* Stat card export links */
+.export-link {
+    color: #3a3b45;
+    transition: color 0.2s;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.export-link:hover {
+    color: #4e73df;
+    text-decoration: none;
+}
+
+.card-footer .export-link i {
+    margin-right: 4px;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .action-buttons .btn {
@@ -197,5 +215,14 @@ input::-webkit-calendar-picker-indicator {
     
     .stats-card .icon {
         font-size: 2.25em;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .card-footer .export-link {
+        margin-top: 5px;
     }
 }
