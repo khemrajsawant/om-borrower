@@ -2,6 +2,8 @@
 
 A comprehensive system for managing borrower information, document tracking, and letter status management.
 
+![Dashboard](static/img/logo.svg)
+
 ## Features
 
 - **Borrower Management:** Add, edit, and delete borrower records with extensive field support
@@ -11,77 +13,109 @@ A comprehensive system for managing borrower information, document tracking, and
 - **Advanced Search:** Search across multiple fields to quickly find borrower information
 - **Letter Status Tracking:** Easily update and track the status of letters sent to borrowers
 
-## Technical Details
+## Installation Guide
 
-- Built with Python, Flask, and SQLAlchemy
-- Supports both SQLite (for easy local deployment) and PostgreSQL (for production)
-- Responsive web interface optimized for desktop use
-- Multilingual support with special handling for Marathi script
-- Document preview capabilities for common file formats
+### 🔍 System Requirements
 
-## Getting Started
+- Python 3.7 or higher
+- Windows, macOS, or Linux operating system
+- 2GB RAM minimum (4GB recommended)
+- 500MB disk space
 
-### Quick Start
+### 🚀 Super Easy Installation (Recommended)
 
-The easiest way to start the application:
+#### Windows Users
+
+1. Simply double-click the `start.bat` file
+   - On first run, it will automatically install everything needed
+   - On subsequent runs, it will just start the application
+
+#### Mac and Linux Users
+
+1. Open Terminal in the application folder
+2. Run: `chmod +x start.sh` (first time only)
+3. Run: `./start.sh`
+   - On first run, it will automatically install everything needed
+   - On subsequent runs, it will just start the application
+
+### 💻 GUI Installer (Alternative)
+
+For a graphical installation experience:
+
+1. Open command prompt/terminal
+2. Navigate to the application folder
+3. Run: `python easy_install.py --gui`
+4. Follow the on-screen instructions
+
+### 🔧 Manual Installation Options
+
+#### Option 1: Using run.py (Simplest)
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/borrower-management.git
-cd borrower-management
-
-# Create a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r package_requirements.txt
-
-# Start the application
+# Start the application (auto-configures everything on first run)
 python run.py
 ```
 
-### Installation Options
-
-#### 1. Simple Run Script
-
-The `run.py` script provides a quick way to start the application without additional setup. It will:
-
-- Create necessary directories
-- Generate a default .env file if one doesn't exist
-- Start the application and open your web browser
-
-#### 2. Setup Script
-
-For a more comprehensive setup, use the `setup.py` script:
+#### Option 2: Using setup.py (Interactive)
 
 ```bash
+# Run the interactive setup wizard
 python setup.py
+
+# After setup completes, run the application
+python app.py
 ```
 
-This interactive script will:
+#### Option 3: Manual Configuration
 
-- Check for required software
-- Create a virtual environment
-- Install dependencies
-- Set up the database (SQLite or PostgreSQL)
-- Create shortcuts or standalone executables (optional)
+1. Copy `.env.example` to `.env` and edit as needed
+2. Create virtual environment: `python -m venv venv`
+3. Activate virtual environment:
+   - Windows: `venv\Scripts\activate`
+   - Mac/Linux: `source venv/bin/activate`
+4. Install dependencies: `pip install -r package_requirements.txt`
+5. Run the application: `python app.py`
 
-#### 3. Manual Configuration
+## 📝 Usage Guide
 
-1. Copy `.env.example` to `.env` and edit the configuration as needed
-2. Install dependencies: `pip install -r package_requirements.txt`
-3. Run the application: `python app.py`
+1. **Add a Borrower:** Click the "Add Borrower" button on the dashboard
+2. **Search Records:** Use the search box on any page or the advanced search feature
+3. **Upload Documents:** When viewing a borrower record, use the documents section
+4. **Export Data:** Click on stat cards on the dashboard to filter and export data
+5. **Update Letter Status:** Edit a borrower to update letter status
 
-## Configuration
+## 📂 File Structure
 
-- Database configuration can be modified in the `.env` file
-- The application uses SQLite by default but can be configured to use PostgreSQL
+```
+/data                  - Database and data files
+/static                - Static assets (CSS, JS, images)
+/templates             - HTML templates
+/uploads               - Uploaded documents
+app.py                 - Main application entry point
+models.py              - Database models
+```
 
-## License
+## 🔄 Database Configuration
+
+The application uses SQLite by default, which requires no setup. For PostgreSQL:
+
+1. Edit the `.env` file and update DATABASE_URL
+2. Example: `DATABASE_URL=postgresql://username:password@localhost:5432/borrower_management`
+
+## 🌐 Multilingual Support
+
+- The application UI is in English
+- Data entry supports Marathi using Unicode/UTF-8 encoding
+- No additional configuration needed for Marathi text
+
+## 💡 Troubleshooting
+
+- **Application won't start:** Ensure Python 3.7+ is installed and in your PATH
+- **Database errors:** Check your `.env` file for correct database configuration
+- **Document upload issues:** Ensure the `/uploads` directory is writable
+
+## 📞 Support
 
 This software is proprietary and intended for use by Maharashtra Lokadhikar Samiti.
 
-## Support
-
-For support, please contact [support@example.com].
+For technical support, please contact [support@example.com].

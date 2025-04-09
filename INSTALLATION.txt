@@ -1,0 +1,81 @@
+=====================================================================
+  महाराष्ट्र लोकाधिकार समिती - Borrower Management System
+                  INSTALLATION GUIDE
+=====================================================================
+
+Thank you for choosing the Borrower Management System. This guide will
+help you install and run the application with minimal effort.
+
+=====================================================================
+                     QUICK START GUIDE
+=====================================================================
+
+### FOR WINDOWS USERS:
+
+  1. Simply double-click on "start.bat"
+     - On first run, the installer will set everything up automatically
+     - On future runs, it will just start the application
+
+### FOR MAC/LINUX USERS:
+
+  1. Open Terminal in the application folder
+  2. Run: chmod +x start.sh (first time only)
+  3. Run: ./start.sh
+     - On first run, the installer will set everything up automatically
+     - On future runs, it will just start the application
+
+=====================================================================
+                       SYSTEM REQUIREMENTS
+=====================================================================
+
+  - Python 3.7 or higher
+  - 2GB RAM (4GB recommended)
+  - 500MB disk space
+
+NOTE: If you don't have Python installed, please download and install it
+      from https://www.python.org/downloads/
+
+=====================================================================
+               ALTERNATIVE INSTALLATION METHODS
+=====================================================================
+
+### GRAPHICAL INSTALLER:
+
+  If you prefer a graphical installation process:
+  
+  1. Open command prompt/terminal
+  2. Navigate to the application folder
+  3. Run: python easy_install.py --gui
+  4. Follow the on-screen prompts
+
+### MANUAL SETUP:
+
+  For advanced users who prefer manual control:
+  
+  1. Copy .env.example to .env and edit as needed
+  2. Create virtual environment: python -m venv venv
+  3. Activate virtual environment:
+     - Windows: venv\Scripts\activate
+     - Mac/Linux: source venv/bin/activate
+  4. Install requirements: pip install -r package_requirements.txt
+  5. Run the application: python app.py
+
+=====================================================================
+                       TROUBLESHOOTING
+=====================================================================
+
+If you encounter any issues during installation:
+
+1. Ensure Python 3.7+ is installed and in your system PATH
+2. Check that you have sufficient permissions to create files/folders
+3. For database errors, verify your .env file has correct configuration
+4. Ensure your network allows the application to access localhost
+
+For additional support, please refer to the README.md file or contact
+our technical support team.
+
+=====================================================================
+                          SUPPORT
+=====================================================================
+
+For technical assistance, please contact: support@example.com
