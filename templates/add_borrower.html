@@ -46,7 +46,12 @@
                 
                 <div class="col-md-4 mb-3">
                     <label for="reference" class="form-label">Reference</label>
-                    <input type="text" class="form-control" id="reference" name="reference">
+                    <select class="form-select" id="reference" name="reference">
+                        <option value="">-- Select Reference --</option>
+                        {% for option in options.get('references', []) %}
+                            <option value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 
                 <div class="col-md-6 mb-3">
@@ -84,43 +89,40 @@
                 
                 <div class="col-md-4 mb-3">
                     <label for="village_city" class="form-label">Village/City<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control devanagari" id="village_city" name="village_city" required
-                           list="village_city_options">
-                    <datalist id="village_city_options">
-                        {% for option in options.get('village_city', []) %}
-                            <option value="{{ option }}">
+                    <select class="form-select devanagari" id="village_city" name="village_city" required>
+                        <option value="">-- Select Village/City --</option>
+                        {% for option in options.get('villages', []) %}
+                            <option value="{{ option }}">{{ option }}</option>
                         {% endfor %}
-                    </datalist>
+                    </select>
                     <div class="invalid-feedback">
-                        Please enter a village or city.
+                        Please select a village or city.
                     </div>
                 </div>
                 
                 <div class="col-md-4 mb-3">
                     <label for="taluka" class="form-label">Taluka<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control devanagari" id="taluka" name="taluka" required
-                           list="taluka_options">
-                    <datalist id="taluka_options">
-                        {% for option in options.get('taluka', []) %}
-                            <option value="{{ option }}">
+                    <select class="form-select devanagari" id="taluka" name="taluka" required>
+                        <option value="">-- Select Taluka --</option>
+                        {% for option in options.get('talukas', []) %}
+                            <option value="{{ option }}">{{ option }}</option>
                         {% endfor %}
-                    </datalist>
+                    </select>
                     <div class="invalid-feedback">
-                        Please enter a taluka.
+                        Please select a taluka.
                     </div>
                 </div>
                 
                 <div class="col-md-4 mb-3">
                     <label for="district" class="form-label">District<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control devanagari" id="district" name="district" required
-                           list="district_options">
-                    <datalist id="district_options">
-                        {% for option in options.get('district', []) %}
-                            <option value="{{ option }}">
+                    <select class="form-select devanagari" id="district" name="district" required>
+                        <option value="">-- Select District --</option>
+                        {% for option in options.get('districts', []) %}
+                            <option value="{{ option }}">{{ option }}</option>
                         {% endfor %}
-                    </datalist>
+                    </select>
                     <div class="invalid-feedback">
-                        Please enter a district.
+                        Please select a district.
                     </div>
                 </div>
                 
@@ -153,15 +155,14 @@
                 
                 <div class="col-md-4 mb-3">
                     <label for="bank_name" class="form-label">Bank Name<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control devanagari" id="bank_name" name="bank_name" required
-                           list="bank_name_options">
-                    <datalist id="bank_name_options">
-                        {% for option in options.get('bank_name', []) %}
-                            <option value="{{ option }}">
+                    <select class="form-select devanagari" id="bank_name" name="bank_name" required>
+                        <option value="">-- Select Bank Name --</option>
+                        {% for option in options.get('banks', []) %}
+                            <option value="{{ option }}">{{ option }}</option>
                         {% endfor %}
-                    </datalist>
+                    </select>
                     <div class="invalid-feedback">
-                        Please enter a bank name.
+                        Please select a bank name.
                     </div>
                 </div>
                 
@@ -209,6 +210,51 @@
         flatpickr("#date", {
             dateFormat: "Y-m-d",
             allowInput: true
+        });
+        
+        // Allow dropdown selects to accept new values
+        ['reference', 'village_city', 'taluka', 'district', 'bank_name'].forEach(function(fieldId) {
+            const select = document.getElementById(fieldId);
+            if (select) {
+                // Create hidden input for custom value
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = select.name;
+                hiddenInput.id = select.id + '_custom';
+                select.parentNode.appendChild(hiddenInput);
+                
+                // Create text input for custom value
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.className = 'form-control devanagari mt-2 d-none';
+                textInput.placeholder = 'Enter custom value';
+                textInput.id = select.id + '_text';
+                select.parentNode.appendChild(textInput);
+                
+                // Add "Custom" option to select
+                const customOption = document.createElement('option');
+                customOption.value = 'custom';
+                customOption.textContent = '-- Add Custom Value --';
+                select.appendChild(customOption);
+                
+                // Handle select change
+                select.addEventListener('change', function() {
+                    if (this.value === 'custom') {
+                        textInput.classList.remove('d-none');
+                        textInput.required = select.required;
+                        select.name = select.id + '_select'; // Rename select to avoid duplicate names
+                    } else {
+                        textInput.classList.add('d-none');
+                        textInput.required = false;
+                        hiddenInput.value = this.value;
+                    }
+                });
+                
+                // Handle text input change
+                textInput.addEventListener('input', function() {
+                    hiddenInput.value = this.value;
+                });
+            }
         });
         
         // Form validation

@@ -160,12 +160,45 @@ def register_routes(app):
     def add_borrower_route():
         """Add a new borrower"""
         if request.method == 'POST':
+            # Check for duplicate borrower name
+            borrower_name = request.form.get('borrower_name')
+            existing_borrower = Borrower.query.filter(Borrower.borrower_name == borrower_name).first()
+            if existing_borrower:
+                flash(f'A borrower with the name "{borrower_name}" already exists. Please use a different name.', 'danger')
+                
+                # Get values for dropdowns
+                today_date = datetime.now().strftime('%Y-%m-%d')
+                last_borrower = Borrower.query.order_by(Borrower.id.desc()).first()
+                next_serial_no = "001"  # Default value if no borrowers exist
+                if last_borrower:
+                    try:
+                        last_serial = int(last_borrower.serial_no)
+                        next_serial_no = f"{last_serial + 1:03d}"
+                    except:
+                        pass
+                        
+                # Get field options for dropdowns
+                options = {
+                    'references': [b.reference for b in Borrower.query.with_entities(Borrower.reference).distinct() if b.reference],
+                    'villages': [b.village_city for b in Borrower.query.with_entities(Borrower.village_city).distinct() if b.village_city],
+                    'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
+                    'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
+                    'banks': [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name],
+                    'letter_statuses': ['Not Send', 'Send', 'Returned Back']
+                }
+                
+                return render_template('add_borrower.html', 
+                                      next_serial_no=next_serial_no, 
+                                      today_date=today_date,
+                                      options=options,
+                                      form_data=request.form)
+            
             # Extract borrower data from form
             borrower = Borrower(
                 serial_no=request.form.get('serial_no'),
                 date=request.form.get('date'),
                 reference=request.form.get('reference'),
-                borrower_name=request.form.get('borrower_name'),
+                borrower_name=borrower_name,
                 co_borrower_name=request.form.get('co_borrower_name'),
                 address_line1=request.form.get('address_line1'),
                 address_line2=request.form.get('address_line2'),
@@ -205,6 +238,7 @@ def register_routes(app):
         
         # Get field options for dropdowns
         options = {
+            'references': [b.reference for b in Borrower.query.with_entities(Borrower.reference).distinct() if b.reference],
             'villages': [b.village_city for b in Borrower.query.with_entities(Borrower.village_city).distinct() if b.village_city],
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
@@ -266,6 +300,7 @@ def register_routes(app):
         # For GET request, show the edit form with current data
         # Get field options for dropdowns
         options = {
+            'references': [b.reference for b in Borrower.query.with_entities(Borrower.reference).distinct() if b.reference],
             'villages': [b.village_city for b in Borrower.query.with_entities(Borrower.village_city).distinct() if b.village_city],
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
@@ -296,6 +331,7 @@ def register_routes(app):
         """Display search page"""
         # Get field options for dropdowns
         options = {
+            'references': [b.reference for b in Borrower.query.with_entities(Borrower.reference).distinct() if b.reference],
             'villages': [b.village_city for b in Borrower.query.with_entities(Borrower.village_city).distinct() if b.village_city],
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
@@ -356,6 +392,7 @@ def register_routes(app):
         
         # Get field options for dropdowns
         options = {
+            'references': [b.reference for b in Borrower.query.with_entities(Borrower.reference).distinct() if b.reference],
             'villages': [b.village_city for b in Borrower.query.with_entities(Borrower.village_city).distinct() if b.village_city],
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
@@ -693,7 +730,9 @@ def register_routes(app):
         """API endpoint to get dropdown options for a field"""
         options = []
         
-        if field == 'village_city':
+        if field == 'reference':
+            options = [b.reference for b in Borrower.query.with_entities(Borrower.reference).distinct() if b.reference]
+        elif field == 'village_city':
             options = [b.village_city for b in Borrower.query.with_entities(Borrower.village_city).distinct() if b.village_city]
         elif field == 'taluka':
             options = [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka]
