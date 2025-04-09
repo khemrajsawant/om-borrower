@@ -157,9 +157,12 @@
                 <div class="col-md-4 mb-3">
                     <label for="letter_status" class="form-label">Letter Status</label>
                     <select class="form-select" id="letter_status" name="letter_status">
-                        <option value="Not Send" {% if borrower.letter_status == 'Not Send' %}selected{% endif %}>Not Sent</option>
-                        <option value="Send" {% if borrower.letter_status == 'Send' %}selected{% endif %}>Sent</option>
+                        <option value="Not Send" {% if borrower.letter_status == 'Not Send' %}selected{% endif %}>Not Send</option>
+                        <option value="Send" {% if borrower.letter_status == 'Send' %}selected{% endif %}>Send</option>
                         <option value="Returned Back" {% if borrower.letter_status == 'Returned Back' %}selected{% endif %}>Returned Back</option>
+                        <option value="Positive Response" {% if borrower.letter_status == 'Positive Response' %}selected{% endif %}>Positive Response</option>
+                        <option value="In Process" {% if borrower.letter_status == 'In Process' %}selected{% endif %}>In Process</option>
+                        <option value="End Process" {% if borrower.letter_status == 'End Process' %}selected{% endif %}>End Process</option>
                     </select>
                 </div>
             </div>

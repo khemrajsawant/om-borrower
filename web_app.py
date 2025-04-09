@@ -184,7 +184,7 @@ def register_routes(app):
                     'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
                     'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
                     'banks': [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name],
-                    'letter_statuses': ['Not Send', 'Send', 'Returned Back']
+                    'letter_statuses': ['Not Send', 'Send', 'Returned Back', 'Positive Response', 'In Process', 'End Process']
                 }
                 
                 return render_template('add_borrower.html', 
@@ -243,7 +243,7 @@ def register_routes(app):
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
             'banks': [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name],
-            'letter_statuses': ['Not Send', 'Send', 'Returned Back']
+            'letter_statuses': ['Not Send', 'Send', 'Returned Back', 'Positive Response', 'In Process', 'End Process']
         }
         
         return render_template('add_borrower.html', 
@@ -305,7 +305,7 @@ def register_routes(app):
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
             'banks': [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name],
-            'letter_statuses': ['Not Send', 'Send', 'Returned Back']
+            'letter_statuses': ['Not Send', 'Send', 'Returned Back', 'Positive Response', 'In Process', 'End Process']
         }
         
         return render_template('edit_borrower.html', 
@@ -336,7 +336,7 @@ def register_routes(app):
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
             'banks': [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name],
-            'letter_statuses': ['Not Send', 'Send', 'Returned Back']
+            'letter_statuses': ['Not Send', 'Send', 'Returned Back', 'Positive Response', 'In Process', 'End Process']
         }
         return render_template('search.html', options=options)
     
@@ -397,7 +397,7 @@ def register_routes(app):
             'talukas': [b.taluka for b in Borrower.query.with_entities(Borrower.taluka).distinct() if b.taluka],
             'districts': [b.district for b in Borrower.query.with_entities(Borrower.district).distinct() if b.district],
             'banks': [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name],
-            'letter_statuses': ['Not Send', 'Send', 'Returned Back']
+            'letter_statuses': ['Not Send', 'Send', 'Returned Back', 'Positive Response', 'In Process', 'End Process']
         }
         
         return render_template('search.html', 
@@ -741,7 +741,7 @@ def register_routes(app):
         elif field == 'bank_name':
             options = [b.bank_name for b in Borrower.query.with_entities(Borrower.bank_name).distinct() if b.bank_name]
         elif field == 'letter_status':
-            options = ['Not Send', 'Send', 'Returned Back']
+            options = ['Not Send', 'Send', 'Returned Back', 'Positive Response', 'In Process', 'End Process']
         
         return jsonify(options)
     

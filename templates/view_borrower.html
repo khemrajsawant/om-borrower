@@ -86,11 +86,19 @@
                     <div class="col-md-4 info-label">Letter Status:</div>
                     <div class="col-md-8">
                         {% if borrower.letter_status == 'Not Send' %}
-                        <span class="badge bg-secondary">Not Sent</span>
+                        <span class="letter-status-badge letter-status-not-send">Not Send</span>
                         {% elif borrower.letter_status == 'Send' %}
-                        <span class="badge bg-success">Sent</span>
+                        <span class="letter-status-badge letter-status-send">Send</span>
                         {% elif borrower.letter_status == 'Returned Back' %}
-                        <span class="badge bg-danger">Returned</span>
+                        <span class="letter-status-badge letter-status-returned-back">Returned Back</span>
+                        {% elif borrower.letter_status == 'Positive Response' %}
+                        <span class="letter-status-badge letter-status-positive-response">Positive Response</span>
+                        {% elif borrower.letter_status == 'In Process' %}
+                        <span class="letter-status-badge letter-status-in-process">In Process</span>
+                        {% elif borrower.letter_status == 'End Process' %}
+                        <span class="letter-status-badge letter-status-end-process">End Process</span>
+                        {% else %}
+                        <span class="letter-status-badge letter-status-not-send">{{ borrower.letter_status }}</span>
                         {% endif %}
                     </div>
                 </div>

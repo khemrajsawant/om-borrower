@@ -68,6 +68,46 @@
     border-radius: 20px;
 }
 
+/* Letter status badges */
+.letter-status-badge {
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    text-align: center;
+    min-width: 120px;
+}
+
+.letter-status-not-send {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.letter-status-send {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.letter-status-returned-back {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.letter-status-positive-response {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.letter-status-in-process {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.letter-status-end-process {
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
 /* Form styling */
 .form-label {
     font-weight: 500;

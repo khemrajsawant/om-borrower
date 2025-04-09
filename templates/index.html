@@ -324,11 +324,19 @@
                             <td>{{ borrower.loan_amount }}</td>
                             <td class="letter-status">
                                 {% if borrower.letter_status == 'Not Send' %}
-                                <span class="badge bg-secondary">Not Sent</span>
+                                <span class="letter-status-badge letter-status-not-send">Not Send</span>
                                 {% elif borrower.letter_status == 'Send' %}
-                                <span class="badge bg-success">Sent</span>
+                                <span class="letter-status-badge letter-status-send">Send</span>
                                 {% elif borrower.letter_status == 'Returned Back' %}
-                                <span class="badge bg-danger">Returned</span>
+                                <span class="letter-status-badge letter-status-returned-back">Returned Back</span>
+                                {% elif borrower.letter_status == 'Positive Response' %}
+                                <span class="letter-status-badge letter-status-positive-response">Positive Response</span>
+                                {% elif borrower.letter_status == 'In Process' %}
+                                <span class="letter-status-badge letter-status-in-process">In Process</span>
+                                {% elif borrower.letter_status == 'End Process' %}
+                                <span class="letter-status-badge letter-status-end-process">End Process</span>
+                                {% else %}
+                                <span class="letter-status-badge letter-status-not-send">{{ borrower.letter_status }}</span>
                                 {% endif %}
                             </td>
                             <td class="action-buttons">
@@ -538,11 +546,19 @@
                     
                     let letterStatus = '';
                     if (borrower.letter_status === 'Not Send') {
-                        letterStatus = '<span class="badge bg-secondary">Not Sent</span>';
+                        letterStatus = '<span class="letter-status-badge letter-status-not-send">Not Send</span>';
                     } else if (borrower.letter_status === 'Send') {
-                        letterStatus = '<span class="badge bg-success">Sent</span>';
+                        letterStatus = '<span class="letter-status-badge letter-status-send">Send</span>';
                     } else if (borrower.letter_status === 'Returned Back') {
-                        letterStatus = '<span class="badge bg-danger">Returned</span>';
+                        letterStatus = '<span class="letter-status-badge letter-status-returned-back">Returned Back</span>';
+                    } else if (borrower.letter_status === 'Positive Response') {
+                        letterStatus = '<span class="letter-status-badge letter-status-positive-response">Positive Response</span>';
+                    } else if (borrower.letter_status === 'In Process') {
+                        letterStatus = '<span class="letter-status-badge letter-status-in-process">In Process</span>';
+                    } else if (borrower.letter_status === 'End Process') {
+                        letterStatus = '<span class="letter-status-badge letter-status-end-process">End Process</span>';
+                    } else {
+                        letterStatus = '<span class="letter-status-badge letter-status-not-send">' + borrower.letter_status + '</span>';
                     }
                     
                     row.innerHTML = `
@@ -595,6 +611,18 @@
             else if (criteria === 'not-sent') {
                 filtered = allBorrowers.filter(b => b.letter_status === 'Not Send');
                 renderBorrowersTable(filtered, 'List of Borrowers with Pending Letters');
+            }
+            else if (criteria === 'positive-response') {
+                filtered = allBorrowers.filter(b => b.letter_status === 'Positive Response');
+                renderBorrowersTable(filtered, 'List of Borrowers with Positive Response');
+            }
+            else if (criteria === 'in-process') {
+                filtered = allBorrowers.filter(b => b.letter_status === 'In Process');
+                renderBorrowersTable(filtered, 'List of Borrowers In Process');
+            }
+            else if (criteria === 'end-process') {
+                filtered = allBorrowers.filter(b => b.letter_status === 'End Process');
+                renderBorrowersTable(filtered, 'List of Borrowers with End Process');
             }
             
             return filtered;
