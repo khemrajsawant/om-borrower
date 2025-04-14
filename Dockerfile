@@ -20,5 +20,7 @@ RUN pip install --upgrade pip && \
 # Expose port (optional: change this according to your app)
 EXPOSE 5000
 
+RUN python3.11 setup.py
+
 # Command to run the application
-CMD ["python", "run.py"]
+CMD ["python3.11", "app.py"]

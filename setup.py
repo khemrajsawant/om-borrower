@@ -270,15 +270,15 @@ def setup_postgresql_locally():
     #     return False
     
     # Get database configuration
-    db_user = input(f"\n{BOLD}Enter PostgreSQL username [{getpass.getuser()}]: {ENDC}") or getpass.getuser()
-    db_password = getpass.getpass(f"{BOLD}Enter PostgreSQL password: {ENDC}")
-    db_name = input(f"{BOLD}Enter database name [borrower_management]: {ENDC}") or "borrower_management"
-    db_host = input(f"{BOLD}Enter database host [localhost]: {ENDC}") or "localhost"
-    db_port = input(f"{BOLD}Enter database port [5432]: {ENDC}") or "5432"
+    # db_user = input(f"\n{BOLD}Enter PostgreSQL username [{getpass.getuser()}]: {ENDC}") or getpass.getuser()
+    # db_password = getpass.getpass(f"{BOLD}Enter PostgreSQL password: {ENDC}")
+    # db_name = input(f"{BOLD}Enter database name [borrower_management]: {ENDC}") or "borrower_management"
+    # db_host = input(f"{BOLD}Enter database host [localhost]: {ENDC}") or "localhost"
+    # db_port = input(f"{BOLD}Enter database port [5432]: {ENDC}") or "5432"
     
     # Create database connection string
-    db_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    
+    # db_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    db_url = "postgresql://admin:admin@my_postgres:5432/borrower_management"
     try:
         # # Create the database
         # run_command([
@@ -497,75 +497,36 @@ def main():
     if not install_dependencies(venv_path):
         return
     
-    # Set up database
-    db_choice = input(f"\n{BOLD}Choose database type [1=SQLite (easier), 2=PostgreSQL]: {ENDC}")
+    # # Set up database
+    # db_choice = "2"
     
-    if db_choice == "2":
-        if not setup_postgresql_locally():
-            print("Falling back to SQLite database...")
-            setup_sqlite_locally()
-    else:
-        setup_sqlite_locally()
+    # if db_choice == "2":
+    #     if not setup_postgresql_locally():
+    #         print("Falling back to SQLite database...")
+    #         setup_sqlite_locally()
+    # else:
+    #     setup_sqlite_locally()
     
-    # Initialize the database
-    if not initialize_database():
-        return
+    # # Initialize the database
+    # if not initialize_database():
+    #     return
     
-    # Create run script
-    create_run_script()
+    # # Create run script
+    # create_run_script()
     
-    # Create desktop shortcut
-    create_shortcut = input(f"\n{BOLD}Create desktop shortcut? [Y/n]: {ENDC}").lower() != "n"
-    if create_shortcut:
-        create_desktop_shortcut(app_path, venv_path)
+    # # Create desktop shortcut
+    # create_shortcut = "no"
+    # if create_shortcut:
+    #     create_desktop_shortcut(app_path, venv_path)
     
-    # Create standalone executable
-    create_exe = input(f"\n{BOLD}Create standalone executable? This may take a while. [y/N]: {ENDC}").lower() == "y"
-    if create_exe:
-        create_bundled_exe(app_path, venv_path)
+    # # Create standalone executable
+    # create_exe = "no"
+    # if create_exe:
+    #     create_bundled_exe(app_path, venv_path)
     
-    print_header("Setup Complete!")
-    print(f"To run the application:")
-    
-    if platform.system() == "Windows":
-        print(f"  - Double-click on {BLUE}run.bat{ENDC}")
-        if create_shortcut:
-            print(f"  - Or use the desktop shortcut: {BLUE}BorrowerManagementSystem.bat{ENDC}")
-    else:
-        print(f"  - Run: {BLUE}./run.sh{ENDC}")
-        if create_shortcut:
-            print(f"  - Or use the desktop shortcut: {BLUE}BorrowerManagementSystem{ENDC}")
-    
-    # Ask if user wants to run the application now
-    run_now = input(f"\n{BOLD}Run the application now? [Y/n]: {ENDC}").lower() != "n"
-    
-    if run_now:
-        print_step("Starting application")
-        print(f"{BOLD}Application will start in a moment. A browser window should open automatically.{ENDC}")
-        print(f"{BOLD}Press Ctrl+C to stop the application.{ENDC}\n")
-        
-        # Open the browser after a short delay
-        def open_browser():
-            time.sleep(2)
-            webbrowser.open("http://localhost:5000")
-        
-        import threading
-        browser_thread = threading.Thread(target=open_browser)
-        browser_thread.daemon = True
-        browser_thread.start()
-        
-        # Run the application
-        if venv_path:
-            # Use the virtual environment's Python
-            python_path = os.path.join(
-                venv_path,
-                "Scripts" if platform.system() == "Windows" else "bin",
-                "python"
-            )
-            run_command([python_path, "app.py"])
-        else:
-            # Use the system's Python
-            run_command([sys.executable, "app.py"])
+    # print_header("Setup Complete!")
+
+
 
 if __name__ == "__main__":
     try:
