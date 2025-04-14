@@ -263,11 +263,11 @@ def setup_postgresql_locally():
     """Set up a local PostgreSQL database."""
     print_step("Setting up local PostgreSQL database")
     
-    # Check if PostgreSQL is already installed
-    if not is_command_available("psql"):
-        print_error("PostgreSQL is not installed. Please install PostgreSQL first.")
-        print(f"Visit {BLUE}https://www.postgresql.org/download/{ENDC} to download and install PostgreSQL.")
-        return False
+    # # Check if PostgreSQL is already installed
+    # if not is_command_available("psql"):
+    #     print_error("PostgreSQL is not installed. Please install PostgreSQL first.")
+    #     print(f"Visit {BLUE}https://www.postgresql.org/download/{ENDC} to download and install PostgreSQL.")
+    #     return False
     
     # Get database configuration
     db_user = input(f"\n{BOLD}Enter PostgreSQL username [{getpass.getuser()}]: {ENDC}") or getpass.getuser()
@@ -280,14 +280,14 @@ def setup_postgresql_locally():
     db_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     
     try:
-        # Create the database
-        run_command([
-            "psql",
-            "-c", f"CREATE DATABASE {db_name};",
-            "-U", db_user,
-            "-h", db_host,
-            "-p", db_port
-        ])
+        # # Create the database
+        # run_command([
+        #     "psql",
+        #     "-c", f"CREATE DATABASE {db_name};",
+        #     "-U", db_user,
+        #     "-h", db_host,
+        #     "-p", db_port
+        # ])
         
         # Create a .env file to store the database URL
         with open(".env", "w") as f:
